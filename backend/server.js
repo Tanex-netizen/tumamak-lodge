@@ -24,54 +24,12 @@ const app = express();
 // Connect to Database
 connectDB();
 
-// CORS configuration - allow configuring allowed origins via env var
-// Set ALLOWED_ORIGINS as a comma-separated list in production (e.g.
-// ALLOWED_ORIGINS="https://tumamak-frontend.onrender.com,https://tumamak-admin.onrender.com")
-const rawOrigins = process.env.ALLOWED_ORIGINS || '';
-const allowedOrigins = rawOrigins
-  .split(',')
-  .map((s) => s.trim())
-  .filter(Boolean);
-
-// default local origins for dev when ALLOWED_ORIGINS is not set
-if (allowedOrigins.length === 0) {
-  allowedOrigins.push(
-    'http://localhost:5173',
-    'http://localhost:5174',
-    'http://localhost:5175',
-    'http://localhost:3000'
-  );
-}
-
-const corsOptions = {
-  origin: function (origin, callback) {
-    // Allow requests with no origin (curl, server-to-server)
-    if (!origin) return callback(null, true);
-    // Accept if origin is explicitly allowed or wildcard is set
-    if (allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
-    // Not allowed - do not throw an error here (that can cause a 500).
-    // Return false so CORS middleware will simply not set CORS headers.
-    return callback(null, false);
-  },
-  credentials: true,
-  optionsSuccessStatus: 200,
-};
-
-// Enable preflight across the board (respond to OPTIONS requests)
-app.options('*', cors(corsOptions));
-
-// Add some permissive headers for allowed requests (Content-Type, Authorization, etc.)
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Credentials', 'true');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
-  next();
-});
-
-// Middleware
-app.use(cors(corsOptions));
+// CORS configuration
+app.use(cors({
+  origin: 'https://tumamak-lodge-frontend.onrender.com',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
