@@ -12,6 +12,7 @@ export const useRoomStore = create((set) => ({
     set({ loading: true, error: null });
     try {
       const { data } = await api.get('/api/rooms', { params: filters });
+      console.log(JSON.stringify(data));
       set({ rooms: data, loading: false });
     } catch (error) {
       set({
