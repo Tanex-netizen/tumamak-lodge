@@ -1,0 +1,52 @@
+# render.yaml - sample Render configuration for Tumamak Lodge
+# Replace placeholder values (between <>) with your real names/values before using
+
+services:
+  - type: web_service
+    name: tumamak-backend
+    env: node
+    branch: main
+    root: backend
+    buildCommand: npm install
+    startCommand: npm start
+    instances: 1
+    plan: free
+    envVars:
+      - key: MONGODB_URI
+        value: "<YOUR_MONGODB_URI>"
+      - key: JWT_SECRET
+        value: "<YOUR_JWT_SECRET>"
+      - key: CLOUDINARY_CLOUD_NAME
+        value: "<CLOUD_NAME>"
+      - key: CLOUDINARY_API_KEY
+        value: "<CLOUD_KEY>"
+      - key: CLOUDINARY_API_SECRET
+        value: "<CLOUD_SECRET>"
+      - key: ALLOWED_ORIGINS
+        value: "https://<your-frontend>.onrender.com,https://<your-admin>.onrender.com"
+      - key: NODE_ENV
+        value: "production"
+
+  - type: static_site
+    name: tumamak-frontend
+    branch: main
+    root: frontend
+    buildCommand: npm run build
+    publishPath: dist
+    envVars:
+      - key: VITE_API_URL
+        value: "https://<your-backend>.onrender.com/api"
+
+  - type: static_site
+    name: tumamak-admin
+    branch: main
+    root: admin
+    buildCommand: npm run build
+    publishPath: dist
+    envVars:
+      - key: VITE_API_URL
+        value: "https://<your-backend>.onrender.com/api"
+
+# Notes:
+# - Do NOT put secrets directly in the repository; prefer Render dashboard secrets or encrypted values.
+# - After you set actual URLs for your services, update ALLOWED_ORIGINS on the backend Render service to include the frontend and admin origins.
