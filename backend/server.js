@@ -45,16 +45,30 @@ if (allowedOrigins.length === 0) {
 
 const corsOptions = {
   origin: function (origin, callback) {
-    // Allow requests with no origin like mobile apps or curl
+    // Allow requests with no origin (curl, server-to-server)
     if (!origin) return callback(null, true);
+    // Accept if origin is explicitly allowed or wildcard is set
     if (allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
-    return callback(new Error('Not allowed by CORS'));
+    // Not allowed - do not throw an error here (that can cause a 500).
+    // Return false so CORS middleware will simply not set CORS headers.
+    return callback(null, false);
   },
   credentials: true,
   optionsSuccessStatus: 200,
 };
+
+// Enable preflight across the board (respond to OPTIONS requests)
+app.options('*', cors(corsOptions));
+
+// Add some permissive headers for allowed requests (Content-Type, Authorization, etc.)
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
+  next();
+});
 
 // Middleware
 app.use(cors(corsOptions));
