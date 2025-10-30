@@ -10,8 +10,8 @@ const RoomCard = ({ room }) => {
   // dev server and production working the same way.
   const resolveImageSrc = (url) => {
     if (!url) return null;
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-    const origin = apiUrl.replace(/\/api\/?$/, '');
+    const api = import.meta.env.VITE_API_URL;
+    const origin = api ? api.replace(/\/api\/?$/, '') : '';
     return url.startsWith('/images') ? `${origin}${url}` : url;
   };
   return (
