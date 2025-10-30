@@ -26,7 +26,7 @@ connectDB();
 
 // CORS configuration
 app.use(cors({
-  origin: 'https://tumamak-lodge-frontend.onrender.com',
+  origin: 'https://tumamak-lodge.onrender.com',
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true
 }));
