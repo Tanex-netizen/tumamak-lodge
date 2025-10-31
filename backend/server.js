@@ -26,10 +26,9 @@ connectDB();
 
 // CORS configuration
 app.use(cors({
-  origin: process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : 'https://tumamak-lodge.onrender.com',
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  credentials: true,
-  allowedHeaders: ['Content-Type', 'Authorization']
+  origin: "*",
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -47,6 +46,11 @@ app.use('/api/homepage', homepageRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/contact-messages', contactMessageRoutes);
+
+// Root route for Render health check
+app.get('/', (req, res) => {
+  res.json({ status: 'OK', message: 'Tumamak Lodge API is running' });
+});
 
 // Health check
 app.get('/api/health', (req, res) => {
