@@ -32,12 +32,14 @@ const useVehicleRentalStore = create((set) => ({
     set({ loading: true, error: null });
     try {
       const response = await axios.get('/vehicle-rentals/my-rentals');
-      set({ rentals: response.data, loading: false });
+      set({ rentals: response.data });
     } catch (error) {
+      console.error('fetchMyRentals error:', error);
       set({
         error: error.response?.data?.message || 'Failed to fetch rentals',
-        loading: false,
       });
+    } finally {
+      set({ loading: false });
     }
   },
 

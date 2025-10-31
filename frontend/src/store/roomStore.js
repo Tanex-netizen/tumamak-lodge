@@ -11,14 +11,16 @@ export const useRoomStore = create((set) => ({
   fetchRooms: async (filters = {}) => {
     set({ loading: true, error: null });
     try {
-  const { data } = await api.get('/rooms', { params: filters });
-      console.log(JSON.stringify(data));
-      set({ rooms: data, loading: false });
+      const { data } = await api.get('/rooms', { params: filters });
+      console.log('fetchRooms response:', data);
+      set({ rooms: data });
     } catch (error) {
+      console.error('fetchRooms error:', error);
       set({
         error: error.response?.data?.message || 'Failed to fetch rooms',
-        loading: false,
       });
+    } finally {
+      set({ loading: false });
     }
   },
 
@@ -28,13 +30,15 @@ export const useRoomStore = create((set) => ({
       const { data } = await api.get(`/rooms/${id}`);
       // Backend returns { room, reviews }, so we need to extract just the room
       const roomData = data.room || data;
-      set({ selectedRoom: roomData, loading: false });
+      set({ selectedRoom: roomData });
       return roomData;
     } catch (error) {
+      console.error('fetchRoomById error:', error);
       set({
         error: error.response?.data?.message || 'Failed to fetch room',
-        loading: false,
       });
+    } finally {
+      set({ loading: false });
     }
   },
 
