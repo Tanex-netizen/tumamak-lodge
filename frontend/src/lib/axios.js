@@ -1,9 +1,16 @@
 import axios from 'axios';
 
+// Normalize VITE_API_URL at build time so the baseURL always ends with `/api`
+const rawApi = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const cleaned = rawApi.replace(/\/+$/, '');
+const baseApiUrl = cleaned.endsWith('/api') ? cleaned : `${cleaned}/api`;
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
+  baseURL: baseApiUrl,
   headers: {
     'Content-Type': 'application/json',
+    // Note: browsers control CORS response headers. This client header
+    // is harmless but doesn't affect server-side Access-Control-Allow-Origin.
     'Access-Control-Allow-Origin': 'true',
   },
 });
