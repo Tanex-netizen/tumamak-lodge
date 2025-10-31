@@ -5,6 +5,7 @@ import { motion as Motion } from 'framer-motion';
 
 const RoomsPage = () => {
   const { rooms, loading, fetchRooms } = useRoomStore();
+  const { error } = useRoomStore();
 
   useEffect(() => {
     fetchRooms();
@@ -27,6 +28,16 @@ const RoomsPage = () => {
         {loading ? (
           <div className="text-center py-12">
             <p className="text-brown-600">Loading rooms...</p>
+          </div>
+        ) : error ? (
+          <div className="text-center py-12">
+            <p className="text-red-600 mb-4">Error loading rooms: {error}</p>
+            <button
+              onClick={() => fetchRooms()}
+              className="px-4 py-2 bg-brown-600 text-white rounded"
+            >
+              Retry
+            </button>
           </div>
         ) : (
           <div className="space-y-16">
