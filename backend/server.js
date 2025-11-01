@@ -24,12 +24,31 @@ const app = express();
 // Connect to Database
 connectDB();
 
-// CORS configuration
-app.use(cors({
-  origin: "*",
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  credentials: true
-}));
+// CORS configuration - read from env or use local defaults
+const rawOrigins = process.env.ALLOWED_ORIGINS || 'http://localhost:5173,http://localhost:5174,http://localhost:5175';
+const allowedOrigins = rawOrigins.split(',').map(s => s.trim()).filter(Boolean);
+
+console.log('🔐 Allowed CORS origins:', allowedOrigins);
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (curl, mobile apps, server-to-server)
+    if (!origin) return callback(null, true);
+    // Accept if origin is in the allowed list or wildcard is set
+    if (allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    console.warn('⚠️ CORS blocked origin:', origin);
+    return callback(null, false);
+  },
+  credentials: true,
+  optionsSuccessStatus: 200,
+};
+
+// Handle preflight globally
+app.options('*', cors(corsOptions));
+app.use(cors(corsOptions));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -57,9 +76,7 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'Tumamak Lodge API is running' });
 });
 
-// Serve repository images folder (located at repo root `/images`) so frontend can request image files directly
-// e.g. /images/room images/room1.jpg
-// When this server runs from the `backend/` folder, process.cwd() is backend/, so the repo images folder is one level up.
+// Serve images from repo root `/images`
 const imagesPath = path.join(process.cwd(), '..', 'images');
 app.use('/images', express.static(imagesPath));
 
@@ -67,7 +84,9 @@ app.use('/images', express.static(imagesPath));
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
+const HOST = '0.0.0.0'; // Bind to all interfaces for Render
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+app.listen(PORT, HOST, () => {
+  console.log(`✅ Server running on port ${PORT}`);
+  console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
 });
