@@ -21,7 +21,6 @@ const Navbar = () => {
     { to: '/rooms', label: 'Rooms' },
     { to: '/vehicles', label: 'Vehicles' },
     { to: '/gallery', label: 'Gallery' },
-    { to: '/contact', label: 'Contact' },
   ];
 
   return (
