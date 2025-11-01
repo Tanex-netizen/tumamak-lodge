@@ -76,6 +76,18 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'Tumamak Lodge API is running' });
 });
 
+// Temporary seed endpoint - REMOVE AFTER FIRST USE
+app.get('/api/seed-now', async (req, res) => {
+  try {
+    const { default: runSeed } = await import('./scripts/seedData.js');
+    await runSeed();
+    res.json({ success: true, message: 'Database seeded successfully!' });
+  } catch (error) {
+    console.error('Seed error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // Serve images from repo root `/images`
 const imagesPath = path.join(process.cwd(), '..', 'images');
 app.use('/images', express.static(imagesPath));

@@ -191,11 +191,22 @@ for (let i = 1; i <= 8; i++) {
     console.log('Email: admin');
     console.log('Password: quickfacts@12345');
 
-    process.exit();
+    // Don't exit if called as module
+    if (import.meta.url === `file://${process.argv[1]}`) {
+      process.exit();
+    }
   } catch (error) {
     console.error('Error seeding database:', error);
-    process.exit(1);
+    if (import.meta.url === `file://${process.argv[1]}`) {
+      process.exit(1);
+    }
+    throw error;
   }
 };
 
-seedData();
+// Run seed if executed directly
+if (import.meta.url === `file://${process.argv[1]}`) {
+  seedData();
+}
+
+export default seedData;
