@@ -174,12 +174,23 @@ const seedVehicles = async () => {
     const createdVehicles = await Vehicle.insertMany(vehicles);
     console.log(`${createdVehicles.length} vehicles seeded successfully`);
 
-    mongoose.connection.close();
-    console.log('Database connection closed');
+    // Don't close connection if called as module
+    if (import.meta.url === `file://${process.argv[1]}`) {
+      mongoose.connection.close();
+      console.log('Database connection closed');
+    }
   } catch (error) {
     console.error('Error seeding vehicles:', error);
-    process.exit(1);
+    if (import.meta.url === `file://${process.argv[1]}`) {
+      process.exit(1);
+    }
+    throw error;
   }
 };
 
-seedVehicles();
+// Run seed if executed directly
+if (import.meta.url === `file://${process.argv[1]}`) {
+  seedVehicles();
+}
+
+export default seedVehicles;

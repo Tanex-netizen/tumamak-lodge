@@ -88,6 +88,18 @@ app.get('/api/seed-now', async (req, res) => {
   }
 });
 
+// Temporary vehicle seed endpoint - REMOVE AFTER FIRST USE
+app.get('/api/seed-vehicles', async (req, res) => {
+  try {
+    const { default: seedVehicles } = await import('./scripts/seedVehicles.js');
+    await seedVehicles();
+    res.json({ success: true, message: 'Vehicles seeded successfully!' });
+  } catch (error) {
+    console.error('Vehicle seed error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // Serve images from repo root `/images`
 const imagesPath = path.join(process.cwd(), '..', 'images');
 app.use('/images', express.static(imagesPath));
