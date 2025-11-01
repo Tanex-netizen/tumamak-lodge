@@ -25,7 +25,7 @@ const seedData = async () => {
       firstName: 'Admin',
       lastName: 'User',
       email: 'admin',
-      password: 'quickfacts@12345',
+      password: 'lodgebooking@12345',
       phone: '+1234567890',
       role: 'admin',
     });
@@ -125,20 +125,13 @@ for (let i = 1; i <= 8; i++) {
     }
 
     // Fix missing images for room 13 and 16 by copying from nearby rooms if needed
-    // (room 13 -> use room12 images, room16 -> use room15 images)
+    // Room 13 now has its own images, so we only fallback for room 16
     const fixFallbackImages = (roomsArray) => {
       // roomsArray is array of room objects just created in memory (groundFloorRooms + upstairsRooms will be merged later)
-      // Find room 13 and 16 in combined list
+      // Find room 16 in combined list
       return roomsArray.map((r) => {
         const num = parseInt(r.name.replace(/[^0-9]/g, ''), 10);
-        if (num === 13 && (!r.images || r.images.length === 0)) {
-          // try to load room12 images
-          const imgs = getImagesForRoom(12);
-          if (imgs.length > 0) {
-            r.images = imgs;
-            r.thumbnail = imgs[0].url;
-          }
-        }
+        // Room 13 now has images (room13.jpg, room13(2).jpg, room13(3).jpg), no fallback needed
         if (num === 16 && (!r.images || r.images.length === 0)) {
           const imgs = getImagesForRoom(15);
           if (imgs.length > 0) {
@@ -189,7 +182,7 @@ for (let i = 1; i <= 8; i++) {
     console.log('\n✅ Database seeded successfully!');
     console.log('\nAdmin credentials:');
     console.log('Email: admin');
-    console.log('Password: quickfacts@12345');
+    console.log('Password: lodgebooking@12345');
 
     // Don't exit if called as module
     if (import.meta.url === `file://${process.argv[1]}`) {
