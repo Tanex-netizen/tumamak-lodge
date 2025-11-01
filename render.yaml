@@ -33,6 +33,10 @@ services:
     root: frontend
     buildCommand: npm run build
     publishPath: dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
     envVars:
       - key: VITE_API_URL
         value: "https://<your-backend>.onrender.com/api"
@@ -43,6 +47,10 @@ services:
     root: admin
     buildCommand: npm run build
     publishPath: dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
     envVars:
       - key: VITE_API_URL
         value: "https://<your-backend>.onrender.com/api"
