@@ -481,14 +481,18 @@ export const getDashboardStats = async (req, res) => {
       {
         $group: {
           _id: null,
-          totalRentalRevenue: { $sum: '$totalAmount' },
+          totalRentalRevenue: { $sum: '$rentalCost' },
+          totalRentalReservationFees: { $sum: '$reservationFee' },
+          totalRentalAmount: { $sum: '$totalAmount' },
         },
       },
     ]);
 
     const reservationFeesTotal = revenueBreakdown[0]?.totalReservationFees || 0;
     const roomRevenueTotal = revenueBreakdown[0]?.totalRoomRevenue || 0;
+    const rentalReservationFeesTotal = vehicleRentalRevenue[0]?.totalRentalReservationFees || 0;
     const rentalRevenueTotal = vehicleRentalRevenue[0]?.totalRentalRevenue || 0;
+    const totalRentalAmount = vehicleRentalRevenue[0]?.totalRentalAmount || 0;
 
     // Revenue by room (only fully-paid bookings)
     const revenueByRoom = await Booking.aggregate([
@@ -544,8 +548,10 @@ export const getDashboardStats = async (req, res) => {
       revenueBreakdown: {
         reservationFees: reservationFeesTotal,
         roomRevenue: roomRevenueTotal,
+        rentalReservationFees: rentalReservationFeesTotal,
         rentalRevenue: rentalRevenueTotal,
-        total: reservationFeesTotal + roomRevenueTotal + rentalRevenueTotal,
+        totalRentalAmount: totalRentalAmount,
+        total: reservationFeesTotal + roomRevenueTotal + totalRentalAmount,
       },
     });
   } catch (error) {

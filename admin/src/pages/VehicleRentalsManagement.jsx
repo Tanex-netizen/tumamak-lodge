@@ -384,6 +384,12 @@ const VehicleRentalsManagement = () => {
                   </p>
                 </div>
                 <div>
+                  <p className="text-sm text-brown-600">Reservation Fee (12%)</p>
+                  <p className="font-medium text-brown-900">
+                    {formatCurrency(selectedRental.reservationFee || 0)}
+                  </p>
+                </div>
+                <div>
                   <p className="text-sm text-brown-600">Security Deposit</p>
                   <p className="font-medium text-brown-900">
                     {formatCurrency(selectedRental.securityDeposit)}

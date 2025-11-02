@@ -325,13 +325,29 @@ const RevenueAnalytics = () => {
                 <div className="text-center">
                   <p className="text-sm text-brown-600">Rental Revenue</p>
                   <p className="text-3xl font-bold text-brown-900 mt-2">
-                    {formatCurrency(stats?.revenueBreakdown?.rentalRevenue || 0)}
+                    {formatCurrency(stats?.revenueBreakdown?.totalRentalAmount || 0)}
                   </p>
                   <p className="text-sm text-brown-600 mt-1">
                     {stats?.revenueBreakdown?.total > 0 
-                      ? ((stats.revenueBreakdown.rentalRevenue / stats.revenueBreakdown.total) * 100).toFixed(1)
+                      ? ((stats.revenueBreakdown.totalRentalAmount / stats.revenueBreakdown.total) * 100).toFixed(1)
                       : 0}% of total
                   </p>
+                  <div className="mt-3 pt-3 border-t border-brown-200">
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div>
+                        <p className="text-brown-500">Rental Cost</p>
+                        <p className="font-semibold text-brown-800">
+                          {formatCurrency(stats?.revenueBreakdown?.rentalRevenue || 0)}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-brown-500">Res. Fee (12%)</p>
+                        <p className="font-semibold text-brown-800">
+                          {formatCurrency(stats?.revenueBreakdown?.rentalReservationFees || 0)}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>

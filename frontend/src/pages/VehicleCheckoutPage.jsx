@@ -37,6 +37,8 @@ const VehicleCheckoutPage = () => {
   });
 
   const [rentalDays, setRentalDays] = useState(0);
+  const [rentalCost, setRentalCost] = useState(0);
+  const [reservationFee, setReservationFee] = useState(0);
   const [totalCost, setTotalCost] = useState(0);
   const [securityDeposit, setSecurityDeposit] = useState(0);
   const [bookedDates, setBookedDates] = useState([]);
@@ -95,7 +97,12 @@ const VehicleCheckoutPage = () => {
       
       if (days > 0) {
         setRentalDays(days);
-        setTotalCost(days * vehicle.pricePerDay);
+        const rentalAmount = days * vehicle.pricePerDay;
+        const feeAmount = Math.round(rentalAmount * 0.12);
+        
+        setRentalCost(rentalAmount);
+        setReservationFee(feeAmount);
+        setTotalCost(rentalAmount + feeAmount);
         
         // Update formData with ISO strings
         setFormData((prev) => ({
@@ -105,6 +112,8 @@ const VehicleCheckoutPage = () => {
         }));
       } else {
         setRentalDays(0);
+        setRentalCost(0);
+        setReservationFee(0);
         setTotalCost(0);
       }
     }
@@ -487,10 +496,22 @@ const VehicleCheckoutPage = () => {
                 <div className="flex justify-between text-sm">
                   <span className="text-brown-600">Rental Cost</span>
                   <span className="font-semibold text-brown-900">
-                    ₱{totalCost.toLocaleString()}
+                    ₱{rentalCost.toLocaleString()}
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-brown-600">Reservation Fee (12%)</span>
+                  <span className="font-semibold text-brown-900">
+                    ₱{reservationFee.toLocaleString()}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm border-t border-brown-200 pt-3">
+                  <span className="text-brown-600">Subtotal</span>
+                  <span className="font-semibold text-brown-900">
+                    ₱{totalCost.toLocaleString()}
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm">
                   <span className="text-brown-600">Security Deposit</span>
                   <span className="font-semibold text-brown-900">
                     ₱{securityDeposit.toLocaleString()}

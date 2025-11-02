@@ -36,6 +36,10 @@ const vehicleRentalSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    reservationFee: {
+      type: Number,
+      default: 0,
+    },
     securityDeposit: {
       type: Number,
       required: true,
