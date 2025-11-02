@@ -230,15 +230,15 @@ const BookingsManagement = () => {
               <Table className="table-fixed">
                 <thead>
                   <tr>
-                    <th className="h-12 px-4 sm:px-6 text-left align-middle font-medium text-brown-700 w-1/4">Guest</th>
-                    <th className="h-12 px-4 sm:px-6 text-left align-middle font-medium text-brown-700 w-24">Room</th>
-                    <th className="h-12 px-4 sm:px-6 text-left align-middle font-medium text-brown-700 w-28">Check-in</th>
-                    <th className="h-12 px-4 sm:px-6 text-left align-middle font-medium text-brown-700 w-28">Check-out</th>
-                    <th className="h-12 px-4 sm:px-6 text-left align-middle font-medium text-brown-700 w-24">Guests</th>
-                    <th className="h-12 px-4 sm:px-6 text-right align-middle font-medium text-brown-700 w-24">Total</th>
-                    <th className="h-12 px-4 sm:px-6 text-left align-middle font-medium text-brown-700 w-28">Status</th>
-                    <th className="h-12 px-4 sm:px-6 text-left align-middle font-medium text-brown-700 w-28">Payment</th>
-                    <th className="h-12 px-4 sm:px-6 text-left align-middle font-medium text-brown-700 w-44">Actions</th>
+                    <th className="h-12 px-4 sm:px-6 text-left align-middle font-medium text-brown-700 w-1/3">Guest</th>
+                    <th className="h-12 px-4 sm:px-6 text-left align-middle font-medium text-brown-700 w-28">Room</th>
+                    <th className="h-12 px-4 sm:px-6 text-left align-middle font-medium text-brown-700 w-32">Check-in</th>
+                    <th className="h-12 px-4 sm:px-6 text-left align-middle font-medium text-brown-700 w-32">Check-out</th>
+                    <th className="h-12 px-4 sm:px-6 text-left align-middle font-medium text-brown-700 w-28">Guests</th>
+                    <th className="h-12 px-4 sm:px-6 text-right align-middle font-medium text-brown-700 w-28">Total</th>
+                    <th className="h-12 px-4 sm:px-6 text-left align-middle font-medium text-brown-700 w-32">Status</th>
+                    <th className="h-12 px-4 sm:px-6 text-left align-middle font-medium text-brown-700 w-32">Payment</th>
+                    <th className="h-12 px-4 sm:px-6 text-left align-middle font-medium text-brown-700 w-56">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
