@@ -228,11 +228,11 @@ export default function WalkInBookings() {
                   )}
                   <div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-brown-700">
                     <div className="flex items-center gap-2">
-                      <Bed className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                      <Bed className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
                       <span className="truncate">{room.type}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                      <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
                       <span className="text-xs sm:text-sm">
                         {typeof room.capacity === 'object' 
                           ? `${room.capacity.adults} adults, ${room.capacity.children} children`
@@ -270,7 +270,7 @@ export default function WalkInBookings() {
               </div>
               <button
                 onClick={handleCloseDialog}
-                className="text-brown-600 hover:text-brown-900 flex-shrink-0"
+                className="text-brown-600 hover:text-brown-900 shrink-0"
               >
                 <X className="h-5 w-5" />
               </button>
