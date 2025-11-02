@@ -458,6 +458,7 @@ export const getDashboardStats = async (req, res) => {
       {
         $match: {
           status: { $nin: ['cancelled'] },
+          paymentStatus: 'fully-paid',
         },
       },
       {
@@ -474,6 +475,7 @@ export const getDashboardStats = async (req, res) => {
       {
         $match: {
           status: { $nin: ['cancelled'] },
+          paymentStatus: 'fully-paid',
         },
       },
       {

@@ -30,7 +30,7 @@ const VehicleRentalsManagement = () => {
 
   useEffect(() => {
     fetchRentals(filters);
-  }, [fetchRentals]);
+  }, [fetchRentals, filters]);
 
   const handleFilterChange = (field, value) => {
     setFilters((prev) => ({ ...prev, [field]: value }));
@@ -106,8 +106,8 @@ const VehicleRentalsManagement = () => {
   const getPaymentColor = (status) => {
     const colors = {
       unpaid: 'bg-red-100 text-red-800',
-      partial: 'bg-yellow-100 text-yellow-800',
-      paid: 'bg-green-100 text-green-800',
+      'deposit-paid': 'bg-yellow-100 text-yellow-800',
+      'fully-paid': 'bg-green-100 text-green-800',
       refunded: 'bg-blue-100 text-blue-800',
     };
     return colors[status] || 'bg-gray-100 text-gray-800';
@@ -471,8 +471,8 @@ const VehicleRentalsManagement = () => {
               onChange={(e) => setNewPaymentStatus(e.target.value)}
             >
               <option value="unpaid">Unpaid</option>
-              <option value="partial">Partial</option>
-              <option value="paid">Paid</option>
+              <option value="deposit-paid">Deposit Paid</option>
+              <option value="fully-paid">Fully Paid</option>
               <option value="refunded">Refunded</option>
             </Select>
           </div>
