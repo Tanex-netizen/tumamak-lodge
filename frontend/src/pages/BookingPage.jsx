@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
+import { useBookingStore } from '../store/bookingStore';
 import { motion as Motion } from 'framer-motion';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
@@ -10,7 +11,7 @@ import { Textarea } from '../components/ui/textarea';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { formatCurrency } from '../lib/utils';
-import { FaCalendar, FaUsers, FaBed, FaMoneyBillWave, FaClock } from 'react-icons/fa';
+import { FaCalendar, FaUsers, FaBed, FaMoneyBillWave } from 'react-icons/fa';
 // note: addDays removed (unused)
 import axios from '../lib/axios';
 
@@ -18,6 +19,7 @@ const BookingPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { isAuthenticated } = useAuthStore();
+  const { createBooking } = useBookingStore();
 
   // Get room and dates from navigation state (from RoomDetailPage)
   const { room, checkIn: initialCheckIn, checkOut: initialCheckOut } = location.state || {};
@@ -34,72 +36,11 @@ const BookingPage = () => {
   const [paymentMethod, setPaymentMethod] = useState('arrival'); // 'arrival' - pay on arrival
   const [error, setError] = useState('');
   const [bookedDates, setBookedDates] = useState([]);
-  
-  // Hold timer state
-  const [holdId, setHoldId] = useState(null);
-  const [holdTimeRemaining, setHoldTimeRemaining] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Create hold when component mounts with valid dates
-  useEffect(() => {
-    const createHoldForDates = async () => {
-      if (!isAuthenticated || !room || !checkIn || !checkOut || holdId) {
-        return; // Don't create hold if already exists or missing data
-      }
-
-      try {
-        const { data } = await axios.post('/bookings/hold', {
-          roomId: room._id,
-          checkInDate: checkIn.toISOString(),
-          checkOutDate: checkOut.toISOString(),
-        });
-
-        if (data.success) {
-          setHoldId(data.data._id);
-          // Start countdown timer (10 minutes)
-          setHoldTimeRemaining(10 * 60); // 600 seconds
-        }
-      } catch (error) {
-        console.error('Failed to create hold:', error);
-        setError(error.response?.data?.message || 'Room may not be available. Please try different dates.');
-      }
-    };
-
-    createHoldForDates();
-  }, [isAuthenticated, room, checkIn, checkOut, holdId]);
-
-  // Countdown timer for hold expiration
-  useEffect(() => {
-    if (holdTimeRemaining === null || holdTimeRemaining <= 0) {
-      return;
-    }
-
-    const interval = setInterval(() => {
-      setHoldTimeRemaining((prev) => {
-        if (prev <= 1) {
-          // Hold expired
-          setError('Your hold has expired. Please select dates again.');
-          setHoldId(null);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [holdTimeRemaining]);
-
-  // Release hold when component unmounts
-  useEffect(() => {
-    return () => {
-      if (holdId) {
-        // Release hold on unmount
-        axios.delete(`/bookings/hold/${holdId}`).catch((err) => {
-          console.error('Failed to release hold:', err);
-        });
-      }
-    };
-  }, [holdId]);
+  // Hold timer disabled - direct booking allowed
+  // const [holdId, setHoldId] = useState(null);
+  // const [holdTimeRemaining, setHoldTimeRemaining] = useState(null);
 
   // Fetch booked dates for the room
   useEffect(() => {
@@ -185,12 +126,26 @@ const BookingPage = () => {
 
   const roomPrice = room.price || 0;
   
-  // Calculate number of 12-hour periods
+  // Calculate number of 12-hour periods based on overnight stays
+  // If check-in and check-out are on different days, count as 1 period (12 hours)
+  // If same day but different times, still count as 1 period
   const calculatePeriods = () => {
     if (!checkIn || !checkOut) return 0;
-    const diffInMs = checkOut - checkIn;
-    const diffInHours = diffInMs / (1000 * 60 * 60);
-    const periods = Math.ceil(diffInHours / 12);
+    
+    const checkInDate = new Date(checkIn);
+    const checkOutDate = new Date(checkOut);
+    
+    // Get date only (ignore time)
+    const checkInDay = new Date(checkInDate.getFullYear(), checkInDate.getMonth(), checkInDate.getDate());
+    const checkOutDay = new Date(checkOutDate.getFullYear(), checkOutDate.getMonth(), checkOutDate.getDate());
+    
+    // Calculate difference in days
+    const diffInMs = checkOutDay - checkInDay;
+    const diffInDays = diffInMs / (1000 * 60 * 60 * 24);
+    
+    // Each night/day counts as 1 period (12 hours)
+    // Same day = 1 period, Next day = 1 period, 2 days later = 2 periods
+    const periods = diffInDays === 0 ? 1 : Math.ceil(diffInDays);
     return periods;
   };
 
@@ -203,13 +158,6 @@ const BookingPage = () => {
     e.preventDefault();
     setError('');
     setIsSubmitting(true);
-
-    // Check if hold expired
-    if (!holdId || holdTimeRemaining <= 0) {
-      setError('Your reservation hold has expired. Please select dates again.');
-      setIsSubmitting(false);
-      return;
-    }
 
     // Validation
     if (!checkIn || !checkOut) {
@@ -239,31 +187,36 @@ const BookingPage = () => {
       }
 
     try {
-      // Confirm the hold to convert it to a booking
-      const { data } = await axios.put(`/bookings/hold/${holdId}/confirm`, {
-        numberOfGuests: adults,
-        totalPrice: totalAmount,
+      // Direct booking without hold
+      const bookingData = {
+        roomId: room._id,
+        checkInDate: checkIn.toISOString(),
+        checkOutDate: checkOut.toISOString(),
+        guests: {
+          adults,
+        },
+        numberOfNights: periods,
+        reservationFee,
         specialRequests,
-      });
+      };
 
-      if (data.success) {
-        // Clear holdId to prevent release on unmount
-        setHoldId(null);
-        
+      const result = await createBooking(bookingData);
+      
+      if (result.success) {
         // Navigate to profile page to view booking
         navigate('/profile', { 
           state: { 
             message: 'Booking created successfully! Pay on arrival.',
-            bookingId: data.data._id 
+            bookingId: result.booking._id 
           } 
         });
       } else {
-        setError(data.message || 'Failed to create booking');
+        setError(result.error || 'Failed to create booking');
         setIsSubmitting(false);
       }
     } catch (err) {
       console.error('Booking error:', err);
-      setError(err.response?.data?.message || err.message || 'Failed to create booking');
+      setError(err.message || 'Failed to create booking');
       setIsSubmitting(false);
     }
   };
@@ -278,49 +231,6 @@ const BookingPage = () => {
         >
           <h1 className="text-4xl font-bold text-brown-900 mb-2">Complete Your Booking</h1>
           <p className="text-brown-600 mb-8">Fill in the details below to reserve your room</p>
-
-          {/* Hold Timer Warning */}
-          {holdId && holdTimeRemaining > 0 && (
-            <Motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-6 p-4 bg-amber-50 border-l-4 border-amber-500 rounded-r-lg"
-            >
-              <div className="flex items-center gap-3">
-                <FaClock className="text-amber-600 text-xl" />
-                <div>
-                  <p className="text-amber-900 font-semibold">
-                    Your dates are reserved for{' '}
-                    <span className="text-amber-700">
-                      {Math.floor(holdTimeRemaining / 60)}:{String(holdTimeRemaining % 60).padStart(2, '0')}
-                    </span>
-                  </p>
-                  <p className="text-amber-700 text-sm">
-                    Complete your booking within this time to secure your reservation
-                  </p>
-                </div>
-              </div>
-            </Motion.div>
-          )}
-
-          {/* Hold Expired Warning */}
-          {holdTimeRemaining === 0 && (
-            <Motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-r-lg"
-            >
-              <div className="flex items-center gap-3">
-                <FaClock className="text-red-600 text-xl" />
-                <div>
-                  <p className="text-red-900 font-semibold">Your reservation hold has expired</p>
-                  <p className="text-red-700 text-sm">
-                    Please go back and select your dates again
-                  </p>
-                </div>
-              </div>
-            </Motion.div>
-          )}
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Left Column - Booking Form */}
@@ -449,7 +359,7 @@ const BookingPage = () => {
                   <Button
                     type="submit"
                     className="w-full bg-brown-600 hover:bg-brown-700 text-white py-6 text-lg"
-                    disabled={isSubmitting || holdTimeRemaining === 0}
+                    disabled={isSubmitting}
                   >
                     {isSubmitting ? 'Creating Booking...' : 'Confirm Booking'}
                   </Button>

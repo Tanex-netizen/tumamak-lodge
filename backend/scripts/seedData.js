@@ -54,7 +54,7 @@ const seedData = async () => {
 
   // Create sample rooms
 // Ground Floor: Rooms 1-8 with prices per 12 hours
-const groundFloorPrices = [500, 500, 900, 500, 500, 900, 500, 1600];
+const groundFloorPrices = [500, 500, 500, 500, 500, 700, 800, 1600];
 const groundFloorRooms = [];
 
 for (let i = 1; i <= 8; i++) {
@@ -91,14 +91,20 @@ for (let i = 1; i <= 8; i++) {
 
 
     // Upstairs: Rooms 9-16 with prices per 12 hours
-    const upstairsPrices = [2200, 1600, 1700, 1700, 1700, 1200, 2200, 1700];
+    const upstairsPrices = [2200, 1600, 1600, 1300, 1300, 1300, 1800, 1700];
     const upstairsRooms = [];
     
     for (let i = 1; i <= 8; i++) {
-      // Upstairs rooms (Rooms 9-16) all include Air Conditioning + Generator
+      // Upstairs rooms (Rooms 9-16) all include Air Conditioning + Generator + Free amenities
       const amenities = [
         'Air Conditioning',
         'Generator',
+        'Free WiFi',
+        'Soap',
+        'Shampoo',
+        'Toothbrush',
+        'Toothpaste',
+        'Towel',
       ];
 
       const upNum = i + 8; // actual room number
