@@ -546,11 +546,10 @@ export const getDashboardStats = async (req, res) => {
       bookingsByStatus,
       revenueByRoom,
       revenueBreakdown: {
-        reservationFees: reservationFeesTotal,
+        // Combined reservation fees from both rooms and rentals
+        reservationFees: reservationFeesTotal + rentalReservationFeesTotal,
         roomRevenue: roomRevenueTotal,
-        rentalReservationFees: rentalReservationFeesTotal,
         rentalRevenue: rentalRevenueTotal,
-        totalRentalAmount: totalRentalAmount,
         total: reservationFeesTotal + roomRevenueTotal + totalRentalAmount,
       },
     });
