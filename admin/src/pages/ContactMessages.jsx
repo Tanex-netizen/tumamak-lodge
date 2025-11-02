@@ -24,18 +24,25 @@ export default function ContactMessages() {
       if (filterStatus) params.append('status', filterStatus);
 
       const response = await axios.get(`/contact-messages?${params.toString()}`);
-      setConversations(response.data.data || []);
-
-      // Update selected conversation if it exists
-      if (selectedConversation) {
-        const updated = response.data.data.find(c => c._id === selectedConversation._id);
-        if (updated) {
-          setSelectedConversation(updated);
+      
+      if (response.data && response.data.data) {
+        setConversations(response.data.data);
+        
+        // Update selected conversation if it exists
+        if (selectedConversation) {
+          const updated = response.data.data.find(c => c._id === selectedConversation._id);
+          if (updated) {
+            setSelectedConversation(updated);
+          }
         }
+      } else {
+        setConversations([]);
       }
     } catch (error) {
-      toast.error('Failed to load conversations');
-      console.error(error);
+      console.error('Error loading conversations:', error);
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to load conversations';
+      toast.error(errorMessage);
+      setConversations([]);
     } finally {
       setLoading(false);
     }
@@ -209,11 +216,11 @@ export default function ContactMessages() {
       </div>
 
       {/* Chat Interface */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-4 overflow-hidden">
-        {/* Left: Conversations List */}
-        <div className="lg:col-span-1 flex flex-col overflow-hidden border border-brown-200 rounded-lg bg-white">
-          <div className="p-4 border-b border-brown-200">
-            <h2 className="text-lg font-semibold text-brown-900">
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-4 overflow-hidden min-h-0">
+        {/* Left: Conversations List - Hidden on mobile when conversation selected */}
+        <div className={`lg:col-span-1 flex flex-col overflow-hidden border border-brown-200 rounded-lg bg-white ${selectedConversation ? 'hidden lg:flex' : 'flex'}`}>
+          <div className="p-3 sm:p-4 border-b border-brown-200">
+            <h2 className="text-base sm:text-lg font-semibold text-brown-900">
               Conversations ({conversations.length})
             </h2>
           </div>
@@ -269,21 +276,32 @@ export default function ContactMessages() {
           </div>
         </div>
 
-        {/* Right: Chat Thread */}
-        <div className="lg:col-span-2 flex flex-col overflow-hidden border border-brown-200 rounded-lg bg-white">
+        {/* Right: Chat Thread - Show back button on mobile */}
+        <div className={`lg:col-span-2 flex flex-col overflow-hidden border border-brown-200 rounded-lg bg-white ${selectedConversation ? 'flex' : 'hidden lg:flex'}`}>
           {selectedConversation ? (
             <>
               {/* Chat Header */}
-              <div className="p-4 border-b border-brown-200 bg-brown-50">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-semibold text-brown-900">{selectedConversation.name}</h3>
-                    <p className="text-sm text-brown-600">{selectedConversation.email}</p>
-                    {selectedConversation.phone && (
-                      <p className="text-xs text-brown-500">{selectedConversation.phone}</p>
-                    )}
+              <div className="p-3 sm:p-4 border-b border-brown-200 bg-brown-50">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    {/* Back button for mobile */}
+                    <Button
+                      onClick={() => setSelectedConversation(null)}
+                      variant="outline"
+                      size="sm"
+                      className="lg:hidden flex-shrink-0"
+                    >
+                      ←
+                    </Button>
+                    <div className="min-w-0">
+                      <h3 className="font-semibold text-sm sm:text-base text-brown-900 truncate">{selectedConversation.name}</h3>
+                      <p className="text-xs sm:text-sm text-brown-600 truncate">{selectedConversation.email}</p>
+                      {selectedConversation.phone && (
+                        <p className="text-xs text-brown-500">{selectedConversation.phone}</p>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
                     <Button
                       onClick={() => handleStatusChange(
                         selectedConversation._id,
@@ -291,6 +309,7 @@ export default function ContactMessages() {
                       )}
                       variant="outline"
                       size="sm"
+                      className="text-xs sm:text-sm px-2 sm:px-3"
                     >
                       {selectedConversation.status === 'active' ? 'Close' : 'Reopen'}
                     </Button>
@@ -298,9 +317,9 @@ export default function ContactMessages() {
                       onClick={() => handleDeleteConversation(selectedConversation._id)}
                       variant="outline"
                       size="sm"
-                      className="text-red-600 border-red-200 hover:bg-red-50"
+                      className="text-red-600 border-red-200 hover:bg-red-50 px-2 sm:px-3"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
                     </Button>
                   </div>
                 </div>
@@ -326,19 +345,19 @@ export default function ContactMessages() {
                           
                           <div className={`flex ${msg.sender === 'customer' ? 'justify-start' : 'justify-end'}`}>
                             <div
-                              className={`max-w-[75%] rounded-lg px-4 py-2 border ${
+                              className={`max-w-[85%] sm:max-w-[75%] rounded-lg px-3 sm:px-4 py-2 sm:py-3 border ${
                                 msg.sender === 'customer'
                                   ? 'bg-white text-brown-900 border-brown-200'
                                   : 'bg-white text-brown-900 border-brown-600 shadow-sm'
                               }`}
                             >
                               {msg.sender === 'admin' && (
-                                <p className="text-xs text-brown-600 font-semibold mb-1">{msg.senderName}</p>
+                                <p className="text-xs sm:text-sm text-brown-600 font-semibold mb-1">{msg.senderName}</p>
                               )}
-                              <p className="text-sm whitespace-pre-wrap break-words text-brown-900">
+                              <p className="text-sm sm:text-base whitespace-pre-wrap break-words text-brown-900">
                                 {msg.text}
                               </p>
-                              <p className="text-xs mt-1 text-brown-500">
+                              <p className="text-xs sm:text-sm mt-1 text-brown-500">
                                 {formatTime(msg.timestamp)}
                               </p>
                             </div>
@@ -356,14 +375,14 @@ export default function ContactMessages() {
               </div>
 
               {/* Message Input */}
-              <form onSubmit={handleSendMessage} className="p-4 border-t border-brown-200 bg-white">
+              <form onSubmit={handleSendMessage} className="p-3 sm:p-4 border-t border-brown-200 bg-white">
                 <div className="flex gap-2">
                   <Textarea
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     placeholder="Type your message..."
-                    rows={2}
-                    className="flex-1 resize-none"
+                    rows={3}
+                    className="flex-1 resize-none text-sm sm:text-base"
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && !e.shiftKey) {
                         e.preventDefault();
@@ -374,7 +393,7 @@ export default function ContactMessages() {
                   <Button
                     type="submit"
                     disabled={sending || !message.trim()}
-                    className="self-end"
+                    className="self-end h-10 w-10 sm:h-auto sm:w-auto sm:px-4"
                   >
                     <Send className="h-4 w-4" />
                   </Button>

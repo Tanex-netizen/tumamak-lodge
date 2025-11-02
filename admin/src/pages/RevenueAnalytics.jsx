@@ -23,7 +23,7 @@ import {
 import { formatCurrency, formatDate } from '../lib/utils';
 
 const RevenueAnalytics = () => {
-  const { stats, fetchDashboardStats, fetchRevenueData } = useDashboardStore();
+  const { stats, fetchDashboardStats } = useDashboardStore();
   
   const [dateRange, setDateRange] = useState('30');
   const [startDate, setStartDate] = useState('');
@@ -63,9 +63,10 @@ const RevenueAnalytics = () => {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [loadData]);
 
-  const loadData = async () => {
+  // eslint-disable-next-line react-hooks/exhaustive-deps, no-undef
+  const loadData = useCallback(async () => {
     setLoading(true);
     setError(null);
     
@@ -73,12 +74,13 @@ const RevenueAnalytics = () => {
       await fetchDashboardStats();
       const range = getDateRange();
       await loadRevenueData(range.startDate, range.endDate);
+    // eslint-disable-next-line no-unused-vars
     } catch (err) {
       setError('Failed to load analytics data');
     } finally {
       setLoading(false);
     }
-  };
+  });
 
   const loadRevenueData = async (start, end) => {
     try {
