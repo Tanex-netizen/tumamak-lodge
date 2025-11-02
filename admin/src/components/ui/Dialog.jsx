@@ -2,9 +2,13 @@ import * as React from "react"
 import { X } from "lucide-react"
 import { cn } from "../../lib/utils"
 
-const Dialog = ({ open, onOpenChange, children }) => {
+const Dialog = ({ open, isOpen, onOpenChange, onClose, title, children }) => {
+  // Support both open/isOpen and onOpenChange/onClose for backward compatibility
+  const isDialogOpen = open !== undefined ? open : isOpen;
+  const handleClose = onOpenChange ? () => onOpenChange(false) : onClose;
+
   React.useEffect(() => {
-    if (open) {
+    if (isDialogOpen) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
@@ -12,17 +16,26 @@ const Dialog = ({ open, onOpenChange, children }) => {
     return () => {
       document.body.style.overflow = 'unset';
     };
-  }, [open]);
+  }, [isDialogOpen]);
 
-  if (!open) return null;
+  if (!isDialogOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div
         className="fixed inset-0 bg-black/50"
-        onClick={() => onOpenChange(false)}
+        onClick={handleClose}
       />
-      <div className="relative z-50">{children}</div>
+      <div className="relative z-50 max-w-2xl w-full mx-4">
+        <DialogContent onClose={handleClose}>
+          {title && (
+            <DialogHeader>
+              <DialogTitle>{title}</DialogTitle>
+            </DialogHeader>
+          )}
+          {children}
+        </DialogContent>
+      </div>
     </div>
   );
 };
