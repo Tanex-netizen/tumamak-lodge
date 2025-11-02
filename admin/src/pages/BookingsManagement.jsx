@@ -30,7 +30,7 @@ const BookingsManagement = () => {
 
   useEffect(() => {
     fetchBookings(filters);
-  }, [fetchBookings]);
+  }, [fetchBookings, filters]);
 
   const handleFilterChange = (field, value) => {
     setFilters((prev) => ({ ...prev, [field]: value }));
@@ -230,21 +230,21 @@ const BookingsManagement = () => {
               <Table>
                 <thead>
                   <tr>
-                    <th>Guest</th>
-                    <th>Room</th>
-                    <th>Check-in</th>
-                    <th>Check-out</th>
-                    <th>Guests</th>
-                    <th>Total</th>
-                    <th>Status</th>
-                    <th>Payment</th>
-                    <th>Actions</th>
+                    <th className="h-12 px-6 text-left align-middle font-medium text-brown-700">Guest</th>
+                    <th className="h-12 px-6 text-left align-middle font-medium text-brown-700">Room</th>
+                    <th className="h-12 px-6 text-left align-middle font-medium text-brown-700">Check-in</th>
+                    <th className="h-12 px-6 text-left align-middle font-medium text-brown-700">Check-out</th>
+                    <th className="h-12 px-6 text-left align-middle font-medium text-brown-700">Guests</th>
+                    <th className="h-12 px-6 text-left align-middle font-medium text-brown-700">Total</th>
+                    <th className="h-12 px-6 text-left align-middle font-medium text-brown-700">Status</th>
+                    <th className="h-12 px-6 text-left align-middle font-medium text-brown-700">Payment</th>
+                    <th className="h-12 px-6 text-left align-middle font-medium text-brown-700">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {bookings.map((booking) => (
                     <tr key={booking._id}>
-                      <td>
+                      <td className="px-6 py-4 align-middle">
                         <div>
                           <p className="font-medium text-brown-900">
                             {booking.user?.firstName} {booking.user?.lastName}
@@ -252,27 +252,27 @@ const BookingsManagement = () => {
                           <p className="text-sm text-brown-600">{booking.user?.email}</p>
                         </div>
                       </td>
-                      <td>{booking.room?.name || 'N/A'}</td>
-                      <td>{formatDate(booking.checkInDate)}</td>
-                      <td>{formatDate(booking.checkOutDate)}</td>
-                      <td>
+                      <td className="px-6 py-4 align-middle">{booking.room?.name || 'N/A'}</td>
+                      <td className="px-6 py-4 align-middle">{formatDate(booking.checkInDate)}</td>
+                      <td className="px-6 py-4 align-middle">{formatDate(booking.checkOutDate)}</td>
+                      <td className="px-6 py-4 align-middle">
                         {typeof booking.guests === 'object' 
                           ? `${booking.guests.adults || 0}A, ${booking.guests.children || 0}C`
                           : booking.guests || 0}
                       </td>
-                      <td className="font-medium">{formatCurrency(booking.totalAmount || 0)}</td>
-                      <td>
+                      <td className="px-6 py-4 align-middle font-medium">{formatCurrency(booking.totalAmount || 0)}</td>
+                      <td className="px-6 py-4 align-middle">
                         <Badge className={getStatusColor(booking.status)}>
                           {booking.status}
                         </Badge>
                       </td>
-                      <td>
+                      <td className="px-6 py-4 align-middle">
                         <Badge className={getPaymentColor(booking.paymentStatus)}>
                           {booking.paymentStatus}
                         </Badge>
                       </td>
-                      <td>
-                        <div className="flex gap-2">
+                      <td className="px-6 py-4 align-middle">
+                        <div className="flex gap-3">
                           <Button
                             size="sm"
                             variant="outline"
