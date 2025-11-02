@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion as Motion } from 'framer-motion';
 import { Calendar, User, Phone, Mail, MapPin, CreditCard, Clock, AlertCircle } from 'lucide-react';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
 import { Input } from '../components/ui/input';
@@ -9,6 +11,7 @@ import { Label } from '../components/ui/label';
 import { Textarea } from '../components/ui/textarea';
 import { useAuthStore } from '../store/authStore';
 import useVehicleRentalStore from '../store/vehicleRentalStore';
+import axios from '../lib/axios';
 
 const VehicleCheckoutPage = () => {
   const navigate = useNavigate();
@@ -36,6 +39,36 @@ const VehicleCheckoutPage = () => {
   const [rentalDays, setRentalDays] = useState(0);
   const [totalCost, setTotalCost] = useState(0);
   const [securityDeposit, setSecurityDeposit] = useState(0);
+  const [bookedDates, setBookedDates] = useState([]);
+  const [pickupDate, setPickupDate] = useState(null);
+  const [returnDate, setReturnDate] = useState(null);
+
+  // Fetch booked dates for the vehicle
+  useEffect(() => {
+    const fetchBookedDates = async () => {
+      if (vehicle?._id) {
+        try {
+          const { data } = await axios.get(`/vehicle-rentals/vehicle/${vehicle._id}/booked-dates`);
+          
+          // Convert string dates to Date objects (normalized to local midnight)
+          if (data.success && data.data.length > 0) {
+            const dates = data.data.map((dateStr) => {
+              const parsed = new Date(dateStr);
+              return new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate());
+            });
+            setBookedDates(dates);
+          } else {
+            setBookedDates([]);
+          }
+        } catch (error) {
+          console.error('Error fetching booked dates:', error);
+          setBookedDates([]);
+        }
+      }
+    };
+    
+    fetchBookedDates();
+  }, [vehicle?._id]);
 
   useEffect(() => {
     // Redirect if no vehicle selected
@@ -57,20 +90,25 @@ const VehicleCheckoutPage = () => {
 
   useEffect(() => {
     // Calculate rental days and total cost
-    if (formData.pickupDate && formData.returnDate) {
-      const pickup = new Date(formData.pickupDate);
-      const returnDate = new Date(formData.returnDate);
-      const days = Math.ceil((returnDate - pickup) / (1000 * 60 * 60 * 24));
+    if (pickupDate && returnDate) {
+      const days = Math.ceil((returnDate - pickupDate) / (1000 * 60 * 60 * 24));
       
       if (days > 0) {
         setRentalDays(days);
         setTotalCost(days * vehicle.pricePerDay);
+        
+        // Update formData with ISO strings
+        setFormData((prev) => ({
+          ...prev,
+          pickupDate: pickupDate.toISOString().split('T')[0],
+          returnDate: returnDate.toISOString().split('T')[0],
+        }));
       } else {
         setRentalDays(0);
         setTotalCost(0);
       }
     }
-  }, [formData.pickupDate, formData.returnDate, vehicle?.pricePerDay]);
+  }, [pickupDate, returnDate, vehicle?.pricePerDay]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -78,6 +116,49 @@ const VehicleCheckoutPage = () => {
       ...prev,
       [name]: value,
     }));
+  };
+
+  // Check if a date is booked
+  const isDateBooked = (date) => {
+    if (!date) return false;
+    return bookedDates.some(
+      bookedDate => 
+        bookedDate.getFullYear() === date.getFullYear() &&
+        bookedDate.getMonth() === date.getMonth() &&
+        bookedDate.getDate() === date.getDate()
+    );
+  };
+
+  // Custom day renderer to show red slash on booked dates
+  const renderDayContents = (day, date) => {
+    if (!date) return day;
+    const isBooked = isDateBooked(date);
+    
+    return (
+      <div className="relative inline-block" style={{ width: '100%', height: '100%', position: 'relative' }}>
+        <span className={isBooked ? 'text-gray-400' : 'text-gray-900'}>{day}</span>
+        {isBooked && (
+          <span 
+            className="absolute text-red-600 font-bold pointer-events-none"
+            style={{ 
+              fontSize: '32px',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              lineHeight: '1',
+              zIndex: 10
+            }}
+          >
+            /
+          </span>
+        )}
+      </div>
+    );
+  };
+
+  // Filter out booked dates
+  const filterDate = (date) => {
+    return !isDateBooked(date);
   };
 
   const handleSubmit = async (e) => {
@@ -133,9 +214,6 @@ const VehicleCheckoutPage = () => {
     return null;
   }
 
-  // Get today's date in YYYY-MM-DD format for min date
-  const today = new Date().toISOString().split('T')[0];
-
   return (
     <div className="min-h-screen bg-brown-50 py-12">
       <div className="container mx-auto px-4 max-w-6xl">
@@ -175,13 +253,15 @@ const VehicleCheckoutPage = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="pickupDate">Pickup Date *</Label>
-                      <Input
-                        type="date"
-                        id="pickupDate"
-                        name="pickupDate"
-                        value={formData.pickupDate}
-                        onChange={handleInputChange}
-                        min={today}
+                      <DatePicker
+                        selected={pickupDate}
+                        onChange={setPickupDate}
+                        dateFormat="MMMM d, yyyy"
+                        minDate={new Date()}
+                        filterDate={filterDate}
+                        renderDayContents={renderDayContents}
+                        className="w-full px-4 py-2 border border-brown-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brown-600"
+                        placeholderText="Select pickup date"
                         required
                       />
                     </div>
@@ -198,13 +278,15 @@ const VehicleCheckoutPage = () => {
                     </div>
                     <div>
                       <Label htmlFor="returnDate">Return Date *</Label>
-                      <Input
-                        type="date"
-                        id="returnDate"
-                        name="returnDate"
-                        value={formData.returnDate}
-                        onChange={handleInputChange}
-                        min={formData.pickupDate || today}
+                      <DatePicker
+                        selected={returnDate}
+                        onChange={setReturnDate}
+                        dateFormat="MMMM d, yyyy"
+                        minDate={pickupDate || new Date()}
+                        filterDate={filterDate}
+                        renderDayContents={renderDayContents}
+                        className="w-full px-4 py-2 border border-brown-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brown-600"
+                        placeholderText="Select return date"
                         required
                       />
                     </div>

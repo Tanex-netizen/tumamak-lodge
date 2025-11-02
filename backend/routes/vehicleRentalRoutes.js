@@ -8,13 +8,14 @@ import {
   updatePaymentStatus,
   cancelRental,
   deleteRental,
+  getBookedDatesForVehicle,
 } from '../controllers/vehicleRentalController.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
 // Public routes
-// None - all rental routes require authentication
+router.get('/vehicle/:vehicleId/booked-dates', getBookedDatesForVehicle);
 
 // Protected routes (user must be logged in)
 router.route('/').post(protect, createVehicleRental).get(protect, authorize('admin', 'staff'), getAllRentals);
@@ -32,3 +33,4 @@ router.route('/:id/cancel').put(protect, cancelRental);
 router.route('/:id').delete(protect, authorize('admin'), deleteRental);
 
 export default router;
+

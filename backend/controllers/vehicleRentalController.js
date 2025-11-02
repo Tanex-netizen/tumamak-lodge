@@ -142,11 +142,13 @@ export const updateRentalStatus = async (req, res) => {
   try {
     const { status, actualPickupDate, actualReturnDate, damageReport, fuelLevel, notes } = req.body;
 
-    const rental = await VehicleRental.findById(req.params.id);
+    const rental = await VehicleRental.findById(req.params.id).populate('vehicle');
 
     if (!rental) {
       return res.status(404).json({ success: false, message: 'Rental not found' });
     }
+
+    const oldStatus = rental.status;
 
     if (status) rental.status = status;
     if (actualPickupDate) rental.actualPickupDate = actualPickupDate;
@@ -156,6 +158,26 @@ export const updateRentalStatus = async (req, res) => {
     if (notes) rental.notes = notes;
 
     await rental.save();
+
+    // Update vehicle availability based on status change
+    // Only for non-motorcycle vehicles (single units)
+    if (rental.vehicle && rental.vehicle.type !== 'Motorcycle') {
+      const vehicle = await Vehicle.findById(rental.vehicle._id);
+      
+      if (vehicle) {
+        // If rental becomes active, mark vehicle as unavailable
+        if (status === 'active' && oldStatus !== 'active') {
+          vehicle.isAvailable = false;
+          await vehicle.save();
+        }
+        
+        // If rental is completed or cancelled, mark vehicle as available
+        if ((status === 'completed' || status === 'cancelled') && (oldStatus === 'active' || oldStatus === 'confirmed')) {
+          vehicle.isAvailable = true;
+          await vehicle.save();
+        }
+      }
+    }
 
     const updatedRental = await VehicleRental.findById(rental._id)
       .populate('vehicle')
@@ -247,6 +269,60 @@ export const deleteRental = async (req, res) => {
     await rental.deleteOne();
 
     res.json({ message: 'Rental deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Get booked dates for a specific vehicle
+// @route   GET /api/vehicle-rentals/vehicle/:vehicleId/booked-dates
+// @access  Public
+export const getBookedDatesForVehicle = async (req, res) => {
+  try {
+    const { vehicleId } = req.params;
+
+    // Check if vehicle exists and get its type
+    const vehicle = await Vehicle.findById(vehicleId);
+    if (!vehicle) {
+      return res.status(404).json({ message: 'Vehicle not found' });
+    }
+
+    // If it's a motorcycle, return empty array (always available - multiple units)
+    if (vehicle.type === 'Motorcycle') {
+      return res.json({ 
+        success: true, 
+        data: [],
+        message: 'Motorcycles have multiple units and are always available'
+      });
+    }
+
+    // For cars/vans/SUVs (single units), get active and confirmed rentals
+    const rentals = await VehicleRental.find({
+      vehicle: vehicleId,
+      status: { $in: ['confirmed', 'active', 'pending'] }, // Include pending, confirmed, and active
+      // Exclude completed and cancelled
+    }).select('pickupDate returnDate');
+
+    // Generate array of booked dates
+    const bookedDates = [];
+    rentals.forEach((rental) => {
+      const start = new Date(rental.pickupDate);
+      const end = new Date(rental.returnDate);
+      
+      // Add all dates between pickup and return (inclusive)
+      for (let date = new Date(start); date <= end; date.setDate(date.getDate() + 1)) {
+        bookedDates.push(new Date(date).toISOString().split('T')[0]); // Format: YYYY-MM-DD
+      }
+    });
+
+    // Remove duplicates
+    const uniqueBookedDates = [...new Set(bookedDates)];
+
+    res.json({ 
+      success: true, 
+      data: uniqueBookedDates,
+      vehicleType: vehicle.type
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
