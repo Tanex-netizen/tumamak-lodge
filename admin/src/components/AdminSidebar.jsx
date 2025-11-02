@@ -16,16 +16,16 @@ import { useNotificationStore } from '../store/notificationStore';
 const navItems = [
   { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/rooms', icon: Bed, label: 'Rooms' },
-  { to: '/bookings', icon: Calendar, label: 'Bookings', badge: 'pendingBookings' },
+  { to: '/bookings', icon: Calendar, label: 'Bookings', badge: 'pendingBookings', section: 'bookings' },
   { to: '/walk-in', icon: UserPlus, label: 'Walk-in Bookings' },
-  { to: '/vehicle-rentals', icon: Car, label: 'Vehicle Rentals', badge: 'pendingRentals' },
-  { to: '/users', icon: Users, label: 'Users', badge: 'newUsers' },
+  { to: '/vehicle-rentals', icon: Car, label: 'Vehicle Rentals', badge: 'pendingRentals', section: 'vehicleRentals' },
+  { to: '/users', icon: Users, label: 'Users', badge: 'newUsers', section: 'users' },
   { to: '/revenue', icon: DollarSign, label: 'Revenue Analytics' },
-  { to: '/contacts', icon: MessageSquare, label: 'Contact Messages', badge: 'unreadMessages' },
+  { to: '/contacts', icon: MessageSquare, label: 'Contact Messages', badge: 'unreadMessages', section: 'contacts' },
 ];
 
 export default function AdminSidebar() {
-  const { counts, fetchNotificationCounts } = useNotificationStore();
+  const { counts, fetchNotificationCounts, markAsViewed } = useNotificationStore();
 
   useEffect(() => {
     // Fetch notification counts on mount
@@ -51,6 +51,12 @@ export default function AdminSidebar() {
               key={item.to}
               to={item.to}
               end={item.to === '/'}
+              onClick={() => {
+                // Mark this section as viewed when clicked
+                if (item.section) {
+                  markAsViewed(item.section);
+                }
+              }}
               className={({ isActive }) =>
                 cn(
                   'flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors relative',
