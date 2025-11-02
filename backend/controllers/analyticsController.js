@@ -2,6 +2,7 @@ import Booking from '../models/Booking.js';
 import Room from '../models/Room.js';
 import User from '../models/User.js';
 import Review from '../models/Review.js';
+import VehicleRental from '../models/VehicleRental.js';
 import { startOfMonth, endOfMonth, startOfYear, endOfYear } from 'date-fns';
 
 // @desc    Get dashboard analytics
@@ -452,6 +453,41 @@ export const getDashboardStats = async (req, res) => {
       },
     ]);
 
+        // Revenue breakdown: Reservation Fees vs Room Total
+    const revenueBreakdown = await Booking.aggregate([
+      {
+        $match: {
+          status: { $nin: ['cancelled'] },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          totalReservationFees: { $sum: '$reservationFee' },
+          totalRoomRevenue: { $sum: '$totalAmount' },
+        },
+      },
+    ]);
+
+    // Vehicle rental revenue
+    const vehicleRentalRevenue = await VehicleRental.aggregate([
+      {
+        $match: {
+          status: { $nin: ['cancelled'] },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          totalRentalRevenue: { $sum: '$totalAmount' },
+        },
+      },
+    ]);
+
+    const reservationFeesTotal = revenueBreakdown[0]?.totalReservationFees || 0;
+    const roomRevenueTotal = revenueBreakdown[0]?.totalRoomRevenue || 0;
+    const rentalRevenueTotal = vehicleRentalRevenue[0]?.totalRentalRevenue || 0;
+
     // Revenue by room (only fully-paid bookings)
     const revenueByRoom = await Booking.aggregate([
       {
@@ -503,6 +539,12 @@ export const getDashboardStats = async (req, res) => {
       occupancyRate,
       bookingsByStatus,
       revenueByRoom,
+      revenueBreakdown: {
+        reservationFees: reservationFeesTotal,
+        roomRevenue: roomRevenueTotal,
+        rentalRevenue: rentalRevenueTotal,
+        total: reservationFeesTotal + roomRevenueTotal + rentalRevenueTotal,
+      },
     });
   } catch (error) {
     res.status(500).json({ message: error.message });

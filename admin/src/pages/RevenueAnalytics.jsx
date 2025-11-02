@@ -256,9 +256,13 @@ const RevenueAnalytics = () => {
                 <div className="text-center">
                   <p className="text-sm text-brown-600">Reservation Fees</p>
                   <p className="text-3xl font-bold text-brown-900 mt-2">
-                    {formatCurrency(45000)}
+                    {formatCurrency(stats?.revenueBreakdown?.reservationFees || 0)}
                   </p>
-                  <p className="text-sm text-brown-600 mt-1">22.5% of total</p>
+                  <p className="text-sm text-brown-600 mt-1">
+                    {stats?.revenueBreakdown?.total > 0 
+                      ? ((stats.revenueBreakdown.reservationFees / stats.revenueBreakdown.total) * 100).toFixed(1)
+                      : 0}% of total
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -266,11 +270,15 @@ const RevenueAnalytics = () => {
             <Card>
               <CardContent className="pt-6">
                 <div className="text-center">
-                  <p className="text-sm text-brown-600">Full Payments</p>
+                  <p className="text-sm text-brown-600">Room Revenue</p>
                   <p className="text-3xl font-bold text-brown-900 mt-2">
-                    {formatCurrency(155000)}
+                    {formatCurrency(stats?.revenueBreakdown?.roomRevenue || 0)}
                   </p>
-                  <p className="text-sm text-brown-600 mt-1">77.5% of total</p>
+                  <p className="text-sm text-brown-600 mt-1">
+                    {stats?.revenueBreakdown?.total > 0 
+                      ? ((stats.revenueBreakdown.roomRevenue / stats.revenueBreakdown.total) * 100).toFixed(1)
+                      : 0}% of total
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -278,11 +286,15 @@ const RevenueAnalytics = () => {
             <Card>
               <CardContent className="pt-6">
                 <div className="text-center">
-                  <p className="text-sm text-brown-600">Avg. Booking Value</p>
+                  <p className="text-sm text-brown-600">Rental Revenue</p>
                   <p className="text-3xl font-bold text-brown-900 mt-2">
-                    {formatCurrency((stats?.totalRevenue || 0) / (stats?.totalBookings || 1))}
+                    {formatCurrency(stats?.revenueBreakdown?.rentalRevenue || 0)}
                   </p>
-                  <p className="text-sm text-brown-600 mt-1">Per booking</p>
+                  <p className="text-sm text-brown-600 mt-1">
+                    {stats?.revenueBreakdown?.total > 0 
+                      ? ((stats.revenueBreakdown.rentalRevenue / stats.revenueBreakdown.total) * 100).toFixed(1)
+                      : 0}% of total
+                  </p>
                 </div>
               </CardContent>
             </Card>
