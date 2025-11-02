@@ -21,12 +21,13 @@ const Dialog = ({ open, isOpen, onOpenChange, onClose, title, children }) => {
   if (!isDialogOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center" role="presentation">
       <div
-        className="fixed inset-0 bg-black/50"
+        className="fixed inset-0 bg-black/50 z-40"
         onClick={handleClose}
+        aria-hidden="true"
       />
-      <div className="relative z-50 max-w-2xl w-full mx-4">
+      <div className="relative z-50 max-w-2xl w-full mx-4" role="dialog" aria-modal="true">
         <DialogContent onClose={handleClose}>
           {title && (
             <DialogHeader>
