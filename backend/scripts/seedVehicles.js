@@ -9,7 +9,7 @@ const vehicles = [
     name: 'Honda Beat',
     type: 'Motorcycle',
     description: '125cc scooter • 2 helmets. Perfect for city riding and easy maneuverability.',
-    pricePerDay: 450,
+    pricePerDay: 350,
     capacity: 2,
     images: [
       {
@@ -26,7 +26,7 @@ const vehicles = [
     name: 'Yamaha Mio Gear',
     type: 'Motorcycle',
     description: '125cc scooter • 2 helmets. Sporty design with excellent performance.',
-    pricePerDay: 450,
+    pricePerDay: 350,
     capacity: 2,
     images: [
       {
@@ -43,7 +43,7 @@ const vehicles = [
     name: 'Honda Click',
     type: 'Motorcycle',
     description: '125cc scooter • 2 helmets. Stylish and comfortable for daily rides.',
-    pricePerDay: 550,
+    pricePerDay: 450,
     capacity: 2,
     images: [
       {
@@ -60,7 +60,7 @@ const vehicles = [
     name: 'Yamaha Fazzio',
     type: 'Motorcycle',
     description: '125cc scooter • 2 helmets. Modern design with advanced features.',
-    pricePerDay: 600,
+    pricePerDay: 500,
     capacity: 2,
     images: [
       {
@@ -77,7 +77,7 @@ const vehicles = [
     name: 'Yamaha NMAX',
     type: 'Motorcycle',
     description: '155cc scooter • 2 helmets. Premium scooter with superior comfort.',
-    pricePerDay: 800,
+    pricePerDay: 700,
     capacity: 2,
     images: [
       {
@@ -94,7 +94,7 @@ const vehicles = [
     name: 'Yamaha Aerox',
     type: 'Motorcycle',
     description: '155cc scooter • 2 helmets. Sporty performance scooter for thrill-seekers.',
-    pricePerDay: 800,
+    pricePerDay: 700,
     capacity: 2,
     images: [
       {
@@ -111,7 +111,7 @@ const vehicles = [
     name: 'Stingray Wagon R',
     type: 'Car',
     description: '7-seater / 7 seats. Compact and fuel-efficient family wagon.',
-    pricePerDay: 1500,
+    pricePerDay: 1400,
     capacity: 7,
     images: [
       {
@@ -128,7 +128,7 @@ const vehicles = [
     name: 'Suzuki S-Presso',
     type: 'SUV',
     description: 'Compact T-seater • 5 seats. Mini SUV with great fuel economy.',
-    pricePerDay: 1900,
+    pricePerDay: 1800,
     capacity: 5,
     images: [
       {
@@ -145,7 +145,7 @@ const vehicles = [
     name: 'Mitsubishi Xpander',
     type: 'Van',
     description: 'MPV 7-seater • 7 seats. Spacious and comfortable for families.',
-    pricePerDay: 2600,
+    pricePerDay: 2500,
     capacity: 7,
     images: [
       {
