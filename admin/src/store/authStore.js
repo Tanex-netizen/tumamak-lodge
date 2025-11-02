@@ -1,9 +1,29 @@
 import { create } from 'zustand';
 import axios from '../lib/axios';
 
+// Safely get initial state from localStorage
+const getInitialUser = () => {
+  try {
+    const user = localStorage.getItem('user');
+    return user ? JSON.parse(user) : null;
+  } catch (error) {
+    console.error('Error parsing user from localStorage:', error);
+    return null;
+  }
+};
+
+const getInitialToken = () => {
+  try {
+    return localStorage.getItem('token') || null;
+  } catch (error) {
+    console.error('Error getting token from localStorage:', error);
+    return null;
+  }
+};
+
 export const useAuthStore = create((set) => ({
-  user: JSON.parse(localStorage.getItem('user')) || null,
-  token: localStorage.getItem('token') || null,
+  user: getInitialUser(),
+  token: getInitialToken(),
   isLoading: false,
   error: null,
 

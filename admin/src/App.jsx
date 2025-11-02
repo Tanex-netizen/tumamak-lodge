@@ -15,7 +15,7 @@ import VehicleRentalsManagement from './pages/VehicleRentalsManagement';
 import ContactMessages from './pages/ContactMessages';
 
 function App() {
-  const { user } = useAuthStore();
+  const user = useAuthStore((state) => state.user);
 
   // If not logged in, show login page
   if (!user || user.role !== 'admin') {

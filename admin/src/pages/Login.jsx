@@ -10,7 +10,11 @@ import { AlertCircle, LogIn } from 'lucide-react';
 
 export default function Login() {
   const navigate = useNavigate();
-  const { user, login, isLoading, error, clearError } = useAuthStore();
+  const user = useAuthStore((state) => state.user);
+  const login = useAuthStore((state) => state.login);
+  const isLoading = useAuthStore((state) => state.isLoading);
+  const error = useAuthStore((state) => state.error);
+  const clearError = useAuthStore((state) => state.clearError);
   
   const [formData, setFormData] = useState({
     email: '',

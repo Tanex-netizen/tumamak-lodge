@@ -4,7 +4,8 @@ import { LogOut, User } from 'lucide-react';
 import { Button } from './ui/Button';
 
 export default function AdminNavbar() {
-  const { user, logout } = useAuthStore();
+  const user = useAuthStore((state) => state.user);
+  const logout = useAuthStore((state) => state.logout);
 
   return (
     <nav className="bg-white border-b border-brown-200 sticky top-0 z-40">
