@@ -84,23 +84,57 @@ const RevenueAnalytics = () => {
 
   const loadRevenueData = async (start, end) => {
     try {
-      // Mock revenue over time data (replace with actual API call)
+      // Fetch actual revenue analytics from API
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/analytics/revenue?startDate=${start}&endDate=${end}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch revenue data');
+      }
+
+      const data = await response.json();
+
+      // Process revenue by room data for bar chart
+      if (data.revenueByRoom && data.revenueByRoom.length > 0) {
+        const roomData = data.revenueByRoom.map(room => ({
+          name: room.roomName || `Room ${room.roomNumber || 'N/A'}`,
+          revenue: room.revenue || 0,
+          bookings: room.bookings || 0,
+        }));
+        setRevenueByRoomData(roomData);
+      } else {
+        setRevenueByRoomData([]);
+      }
+
+      // Process payment status breakdown for pie chart
+      if (data.paymentStatusBreakdown && data.paymentStatusBreakdown.length > 0) {
+        const paymentData = data.paymentStatusBreakdown.map((item, index) => ({
+          name: item._id === 'fully-paid' ? 'Full Payments' : 
+                item._id === 'partially-paid' ? 'Partial Payments' : 
+                'Reservation Fees',
+          value: item.total || 0,
+          color: index === 0 ? '#977669' : index === 1 ? '#d2bab0' : '#e8d5cd',
+        }));
+        setPaymentTypeData(paymentData);
+      } else {
+        setPaymentTypeData([]);
+      }
+
+      // Generate mock time-series data based on date range
+      // (You can enhance this by adding a daily revenue endpoint to your backend)
       const mockRevenueData = generateMockRevenueData(start, end);
       setRevenueData(mockRevenueData);
 
-      // Mock revenue by room data
-      if (stats?.revenueByRoom) {
-        setRevenueByRoomData(stats.revenueByRoom);
-      }
-
-      // Mock payment type breakdown
-      const mockPaymentData = [
-        { name: 'Reservation Fees', value: 45000, color: '#977669' },
-        { name: 'Full Payments', value: 155000, color: '#d2bab0' },
-      ];
-      setPaymentTypeData(mockPaymentData);
     } catch (error) {
       console.error('Error loading revenue data:', error);
+      setError('Failed to load revenue data. Please try again.');
     }
   };
 
@@ -112,7 +146,8 @@ const RevenueAnalytics = () => {
       await fetchDashboardStats();
       const range = getDateRange();
       await loadRevenueData(range.startDate, range.endDate);
-    } catch (error) {
+    } catch (err) {
+      console.error('Failed to load analytics data:', err);
       setError('Failed to load analytics data');
     } finally {
       setLoading(false);
@@ -308,71 +343,18 @@ const RevenueAnalytics = () => {
               <CardTitle>Revenue Trend</CardTitle>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={400}>
-                <LineChart data={revenueData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e0cec7" />
-                  <XAxis
-                    dataKey="date"
-                    stroke="#977669"
-                    tick={{ fill: '#977669', fontSize: 12 }}
-                    tickFormatter={(value) => {
-                      const date = new Date(value);
-                      return `${date.getMonth() + 1}/${date.getDate()}`;
-                    }}
-                  />
-                  <YAxis
-                    stroke="#977669"
-                    tick={{ fill: '#977669', fontSize: 12 }}
-                    tickFormatter={(value) => `₱${value / 1000}k`}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: '#fff',
-                      border: '1px solid #e0cec7',
-                      borderRadius: '8px',
-                    }}
-                    formatter={(value) => [formatCurrency(value), '']}
-                    labelFormatter={(label) => formatDate(label)}
-                  />
-                  <Legend />
-                  <Line
-                    type="monotone"
-                    dataKey="revenue"
-                    stroke="#977669"
-                    strokeWidth={2}
-                    name="Total Revenue"
-                    dot={{ fill: '#977669', r: 4 }}
-                    activeDot={{ r: 6 }}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="reservations"
-                    stroke="#d2bab0"
-                    strokeWidth={2}
-                    name="Reservation Fees"
-                    dot={{ fill: '#d2bab0', r: 4 }}
-                    activeDot={{ r: 6 }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
-          {/* Charts Row */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Revenue by Room */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Revenue by Room Type</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={350}>
-                  <BarChart data={revenueByRoomData}>
+              {revenueData && revenueData.length > 0 ? (
+                <ResponsiveContainer width="100%" height={400}>
+                  <LineChart data={revenueData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e0cec7" />
                     <XAxis
-                      dataKey="roomName"
+                      dataKey="date"
                       stroke="#977669"
                       tick={{ fill: '#977669', fontSize: 12 }}
+                      tickFormatter={(value) => {
+                        const date = new Date(value);
+                        return `${date.getMonth() + 1}/${date.getDate()}`;
+                      }}
                     />
                     <YAxis
                       stroke="#977669"
@@ -385,11 +367,82 @@ const RevenueAnalytics = () => {
                         border: '1px solid #e0cec7',
                         borderRadius: '8px',
                       }}
-                      formatter={(value) => [formatCurrency(value), 'Revenue']}
+                      formatter={(value) => [formatCurrency(value), '']}
+                      labelFormatter={(label) => formatDate(label)}
                     />
-                    <Bar dataKey="revenue" fill="#977669" radius={[8, 8, 0, 0]} />
-                  </BarChart>
+                    <Legend />
+                    <Line
+                      type="monotone"
+                      dataKey="revenue"
+                      stroke="#977669"
+                      strokeWidth={2}
+                      name="Total Revenue"
+                      dot={{ fill: '#977669', r: 4 }}
+                      activeDot={{ r: 6 }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="reservations"
+                      stroke="#d2bab0"
+                      strokeWidth={2}
+                      name="Reservation Fees"
+                      dot={{ fill: '#d2bab0', r: 4 }}
+                      activeDot={{ r: 6 }}
+                    />
+                  </LineChart>
                 </ResponsiveContainer>
+              ) : (
+                <div className="flex items-center justify-center h-[400px] text-brown-600">
+                  <div className="text-center">
+                    <p className="text-lg font-medium mb-2">No revenue trend data available</p>
+                    <p className="text-sm">Revenue trends will appear here once bookings are made</p>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Charts Row */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Revenue by Room */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Revenue by Room Type</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {revenueByRoomData && revenueByRoomData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={350}>
+                    <BarChart data={revenueByRoomData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e0cec7" />
+                      <XAxis
+                        dataKey="name"
+                        stroke="#977669"
+                        tick={{ fill: '#977669', fontSize: 12 }}
+                      />
+                      <YAxis
+                        stroke="#977669"
+                        tick={{ fill: '#977669', fontSize: 12 }}
+                        tickFormatter={(value) => `₱${value / 1000}k`}
+                      />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: '#fff',
+                          border: '1px solid #e0cec7',
+                          borderRadius: '8px',
+                        }}
+                        formatter={(value) => [formatCurrency(value), 'Revenue']}
+                      />
+                      <Bar dataKey="revenue" fill="#977669" radius={[8, 8, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex items-center justify-center h-[350px] text-brown-600">
+                    <div className="text-center">
+                      <p className="text-lg font-medium mb-2">No room revenue data available</p>
+                      <p className="text-sm">Create some bookings to see revenue by room type</p>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -399,32 +452,41 @@ const RevenueAnalytics = () => {
                 <CardTitle>Payment Type Distribution</CardTitle>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={350}>
-                  <PieChart>
-                    <Pie
-                      data={paymentTypeData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                      outerRadius={120}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      {paymentTypeData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: '#fff',
-                        border: '1px solid #e0cec7',
-                        borderRadius: '8px',
-                      }}
-                      formatter={(value) => formatCurrency(value)}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
+                {paymentTypeData && paymentTypeData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={350}>
+                    <PieChart>
+                      <Pie
+                        data={paymentTypeData}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                        outerRadius={120}
+                        fill="#8884d8"
+                        dataKey="value"
+                      >
+                        {paymentTypeData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: '#fff',
+                          border: '1px solid #e0cec7',
+                          borderRadius: '8px',
+                        }}
+                        formatter={(value) => formatCurrency(value)}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex items-center justify-center h-[350px] text-brown-600">
+                    <div className="text-center">
+                      <p className="text-lg font-medium mb-2">No payment data available</p>
+                      <p className="text-sm">Payment distribution will appear here once bookings are made</p>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
