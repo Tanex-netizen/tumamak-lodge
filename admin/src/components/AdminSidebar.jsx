@@ -31,10 +31,10 @@ export default function AdminSidebar() {
     // Fetch notification counts on mount
     fetchNotificationCounts();
 
-    // Refresh every 30 seconds
+    // Refresh every 5 seconds (faster updates)
     const interval = setInterval(() => {
       fetchNotificationCounts();
-    }, 30000);
+    }, 5000);
 
     return () => clearInterval(interval);
   }, [fetchNotificationCounts]);

@@ -62,13 +62,18 @@ export const useNotificationStore = create(
               }).length
             : 0;
 
-          // Count unread messages created after last view
+          // Count messages with new activity after last view (either unread OR updated after last view)
           const messages = messagesRes.data?.data || [];
           const unreadMessages = Array.isArray(messages)
             ? messages.filter(m => {
-                if (m.isRead) return false;
-                if (!lastViewed.contacts) return true;
-                return new Date(m.createdAt) > new Date(lastViewed.contacts);
+                // If no last view time, count all unread or recently active
+                if (!lastViewed.contacts) {
+                  return !m.isRead || m.status === 'active';
+                }
+                // Count if: unread, OR has new messages after last view
+                const lastViewTime = new Date(lastViewed.contacts);
+                const lastMessageTime = new Date(m.lastMessageAt || m.updatedAt);
+                return !m.isRead || lastMessageTime > lastViewTime;
               }).length
             : 0;
 
