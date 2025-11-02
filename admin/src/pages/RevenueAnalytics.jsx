@@ -23,7 +23,8 @@ import {
 import { formatCurrency, formatDate } from '../lib/utils';
 
 const RevenueAnalytics = () => {
-  const { stats, fetchDashboardStats } = useDashboardStore();
+  const fetchDashboardStats = useDashboardStore((state) => state.fetchDashboardStats);
+  const stats = useDashboardStore((state) => state.stats);
   
   const [dateRange, setDateRange] = useState('30');
   const [startDate, setStartDate] = useState('');
@@ -61,49 +62,6 @@ const RevenueAnalytics = () => {
     };
   };
 
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps, no-undef
-  const loadData = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      await fetchDashboardStats();
-      const range = getDateRange();
-      await loadRevenueData(range.startDate, range.endDate);
-    // eslint-disable-next-line no-unused-vars
-    } catch (err) {
-      setError('Failed to load analytics data');
-    } finally {
-      setLoading(false);
-    }
-  });
-
-  const loadRevenueData = async (start, end) => {
-    try {
-      // Mock revenue over time data (replace with actual API call)
-      const mockRevenueData = generateMockRevenueData(start, end);
-      setRevenueData(mockRevenueData);
-
-      // Mock revenue by room data
-      if (stats?.revenueByRoom) {
-        setRevenueByRoomData(stats.revenueByRoom);
-      }
-
-      // Mock payment type breakdown
-      const mockPaymentData = [
-        { name: 'Reservation Fees', value: 45000, color: '#977669' },
-        { name: 'Full Payments', value: 155000, color: '#d2bab0' },
-      ];
-      setPaymentTypeData(mockPaymentData);
-    } catch (err) {
-      console.error('Error loading revenue data:', err);
-    }
-  };
-
   const generateMockRevenueData = (start, end) => {
     const data = [];
     const startDate = new Date(start);
@@ -123,6 +81,48 @@ const RevenueAnalytics = () => {
     
     return data;
   };
+
+  const loadRevenueData = async (start, end) => {
+    try {
+      // Mock revenue over time data (replace with actual API call)
+      const mockRevenueData = generateMockRevenueData(start, end);
+      setRevenueData(mockRevenueData);
+
+      // Mock revenue by room data
+      if (stats?.revenueByRoom) {
+        setRevenueByRoomData(stats.revenueByRoom);
+      }
+
+      // Mock payment type breakdown
+      const mockPaymentData = [
+        { name: 'Reservation Fees', value: 45000, color: '#977669' },
+        { name: 'Full Payments', value: 155000, color: '#d2bab0' },
+      ];
+      setPaymentTypeData(mockPaymentData);
+    } catch (error) {
+      console.error('Error loading revenue data:', error);
+    }
+  };
+
+  const loadData = async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      await fetchDashboardStats();
+      const range = getDateRange();
+      await loadRevenueData(range.startDate, range.endDate);
+    } catch (error) {
+      setError('Failed to load analytics data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dateRange]);
 
   const handleDateRangeChange = (value) => {
     setDateRange(value);
