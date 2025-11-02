@@ -44,8 +44,11 @@ const BookingPage = () => {
         try {
           const { data } = await axios.get(`/bookings/room/${room._id}/booked-dates`);
           console.log('Fetched booked dates:', data.data); // Debug log
-          // Convert string dates to Date objects
-          const dates = data.data.map(dateStr => new Date(dateStr + 'T00:00:00'));
+          // Convert string dates to normalized local Date objects at midnight
+          const dates = data.data.map((dateStr) => {
+            const parsed = new Date(dateStr);
+            return new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate());
+          });
           console.log('Converted to Date objects:', dates); // Debug log
           setBookedDates(dates);
         } catch (error) {

@@ -36,8 +36,11 @@ export default function WalkInBookings() {
     try {
       const response = await axios.get(`/bookings/room/${roomId}/booked-dates`);
       const dates = response.data.data || response.data || [];
-      // Convert string dates to Date objects
-      const dateObjects = dates.map(dateStr => new Date(dateStr + 'T00:00:00'));
+      // Convert string dates to local Date objects at midnight (normalize)
+      const dateObjects = dates.map((dateStr) => {
+        const parsed = new Date(dateStr);
+        return new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate());
+      });
       setBookedDates(dateObjects);
     } catch (error) {
       console.error('Error fetching booked dates:', error);
@@ -121,11 +124,15 @@ export default function WalkInBookings() {
       return;
     }
 
-    // Check if any selected dates are already booked
+    // Check if any selected dates are already booked (inclusive of check-out)
     const currentDate = new Date(checkInDate);
     const endDate = new Date(checkOutDate);
-    
-    while (currentDate < endDate) {
+
+    // Normalize to local midnight for comparisons
+    currentDate.setHours(0, 0, 0, 0);
+    endDate.setHours(0, 0, 0, 0);
+
+    while (currentDate <= endDate) {
       if (isDateBooked(currentDate)) {
         toast.error('Some of the selected dates are already booked');
         return;

@@ -97,7 +97,10 @@ const RoomDetailPage = () => {
 
   // Parse booked dates for calendar highlighting
   // bookedDates is now an array of date strings like ["2025-10-18", "2025-10-19"]
-  const excludedDates = bookedDates.map(dateStr => new Date(dateStr + 'T00:00:00'));
+  const excludedDates = bookedDates.map((dateStr) => {
+    const parsed = new Date(dateStr);
+    return new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate());
+  });
 
   // Check if a date is booked
   const isDateBooked = (date) => {
