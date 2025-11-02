@@ -29,12 +29,13 @@ export default function ContactMessages() {
         setConversations(response.data.data);
         
         // Update selected conversation if it exists
-        if (selectedConversation) {
-          const updated = response.data.data.find(c => c._id === selectedConversation._id);
-          if (updated) {
-            setSelectedConversation(updated);
+        setSelectedConversation(prev => {
+          if (prev) {
+            const updated = response.data.data.find(c => c._id === prev._id);
+            return updated || prev;
           }
-        }
+          return prev;
+        });
       } else {
         setConversations([]);
       }
@@ -46,7 +47,7 @@ export default function ContactMessages() {
     } finally {
       setLoading(false);
     }
-  }, [filterStatus, selectedConversation]);
+  }, [filterStatus]);
 
   useEffect(() => {
     fetchConversations();
