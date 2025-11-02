@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { useAuthStore } from './store/authStore';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -20,18 +20,19 @@ function App() {
   // If not logged in, show login page
   if (!user || user.role !== 'admin') {
     return (
-      <Router>
+      <>
+        <Toaster position="top-right" />
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
-      </Router>
+      </>
     );
   }
 
   // If logged in as admin, show admin panel
   return (
-    <Router>
+    <>
       <Toaster position="top-right" />
       <div className="min-h-screen bg-brown-50">
         <AdminNavbar />
@@ -108,7 +109,7 @@ function App() {
           </main>
         </div>
       </div>
-    </Router>
+    </>
   );
 }
 
