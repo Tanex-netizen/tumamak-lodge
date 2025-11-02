@@ -10,6 +10,9 @@ import {
   deleteBooking,
   getBookedDatesForRoom,
   createWalkInBooking,
+  createHold,
+  releaseHold,
+  confirmHold,
 } from '../controllers/bookingController.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
 
@@ -22,6 +25,11 @@ router.route('/')
 router.post('/walk-in', protect, authorize('admin', 'staff'), createWalkInBooking);
 router.get('/my-bookings', protect, getMyBookings);
 router.get('/room/:roomId/booked-dates', getBookedDatesForRoom); // Public route
+
+// Hold routes
+router.post('/hold', protect, createHold);
+router.delete('/hold/:id', protect, releaseHold);
+router.put('/hold/:id/confirm', protect, confirmHold);
 
 router.route('/:id')
   .get(protect, getBookingById)

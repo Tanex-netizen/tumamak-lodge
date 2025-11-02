@@ -31,21 +31,31 @@ export const createBooking = async (req, res) => {
     const checkIn = new Date(checkInDate);
     const checkOut = new Date(checkOutDate);
 
-    // Check for overlapping bookings
+    // Check for overlapping bookings (including holds that haven't expired)
+    const now = new Date();
     const overlappingBookings = await Booking.find({
       room: roomId,
       status: { $nin: ['cancelled'] },
       $or: [
+        // Regular bookings
         {
           checkInDate: { $lte: checkOut },
           checkOutDate: { $gte: checkIn },
+          status: { $ne: 'hold' },
+        },
+        // Hold bookings that haven't expired
+        {
+          checkInDate: { $lte: checkOut },
+          checkOutDate: { $gte: checkIn },
+          status: 'hold',
+          holdExpiresAt: { $gt: now },
         },
       ],
     });
 
     if (overlappingBookings.length > 0) {
       return res.status(400).json({
-        message: 'Room is not available for the selected dates',
+        message: 'Room is not available for the selected dates. Another user may be completing a booking.',
       });
     }
 
@@ -374,11 +384,15 @@ export const getBookedDatesForRoom = async (req, res) => {
     const { roomId } = req.params;
 
     // Find all bookings that are confirmed/completed (red slash appears after customer confirms booking)
-    // Exclude: cancelled bookings only
-    // Include: pending, confirmed, checked-in, checked-out (all show red slash)
+    // Exclude: cancelled bookings and expired holds
+    // Include: pending, confirmed, checked-in, checked-out, active holds (all show red slash)
+    const now = new Date();
     const bookings = await Booking.find({
       room: roomId,
-      status: { $ne: 'cancelled' }, // Only exclude cancelled bookings
+      $or: [
+        { status: { $nin: ['cancelled', 'hold'] } }, // All non-cancelled, non-hold bookings
+        { status: 'hold', holdExpiresAt: { $gt: now } }, // Active holds only
+      ],
     }).select('checkInDate checkOutDate');
 
     // Generate array of all booked dates
@@ -404,3 +418,157 @@ export const getBookedDatesForRoom = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+// @desc    Create a temporary hold on a room
+// @route   POST /api/bookings/hold
+// @access  Private
+export const createHold = async (req, res) => {
+  try {
+    const { roomId, checkInDate, checkOutDate } = req.body;
+
+    if (!roomId || !checkInDate || !checkOutDate) {
+      return res.status(400).json({ message: 'Room ID, check-in date, and check-out date are required' });
+    }
+
+    const checkIn = new Date(checkInDate);
+    const checkOut = new Date(checkOutDate);
+    const now = new Date();
+
+    // Validate dates
+    if (checkIn >= checkOut) {
+      return res.status(400).json({ message: 'Check-out date must be after check-in date' });
+    }
+
+    if (checkIn < now) {
+      return res.status(400).json({ message: 'Check-in date cannot be in the past' });
+    }
+
+    // Check if room exists
+    const room = await Room.findById(roomId);
+    if (!room) {
+      return res.status(404).json({ message: 'Room not found' });
+    }
+
+    // Check for overlapping bookings (including active holds)
+    const overlappingBookings = await Booking.find({
+      room: roomId,
+      status: { $nin: ['cancelled'] },
+      $or: [
+        { // Regular bookings
+          checkInDate: { $lte: checkOut },
+          checkOutDate: { $gte: checkIn },
+          status: { $ne: 'hold' },
+        },
+        { // Active holds
+          checkInDate: { $lte: checkOut },
+          checkOutDate: { $gte: checkIn },
+          status: 'hold',
+          holdExpiresAt: { $gt: now },
+        },
+      ],
+    });
+
+    if (overlappingBookings.length > 0) {
+      return res.status(400).json({ 
+        message: 'Room is not available for the selected dates. Another user may be completing a booking.' 
+      });
+    }
+
+    // Create hold (expires in 10 minutes)
+    const holdExpiresAt = new Date(now.getTime() + 10 * 60 * 1000);
+
+    const hold = await Booking.create({
+      user: req.user._id,
+      room: roomId,
+      checkInDate: checkIn,
+      checkOutDate: checkOut,
+      numberOfGuests: 1, // Placeholder, will be updated when booking is confirmed
+      totalPrice: 0, // Placeholder
+      status: 'hold',
+      holdExpiresAt,
+    });
+
+    res.status(201).json({
+      success: true,
+      data: hold,
+      message: 'Hold created successfully. You have 10 minutes to complete your booking.',
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Release a hold (cancel before completing booking)
+// @route   DELETE /api/bookings/hold/:id
+// @access  Private
+export const releaseHold = async (req, res) => {
+  try {
+    const hold = await Booking.findById(req.params.id);
+
+    if (!hold) {
+      return res.status(404).json({ message: 'Hold not found' });
+    }
+
+    // Verify ownership
+    if (hold.user.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Not authorized to release this hold' });
+    }
+
+    // Only allow releasing holds, not confirmed bookings
+    if (hold.status !== 'hold') {
+      return res.status(400).json({ message: 'Can only release holds, not confirmed bookings' });
+    }
+
+    await Booking.findByIdAndDelete(req.params.id);
+
+    res.json({
+      success: true,
+      message: 'Hold released successfully',
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Convert hold to confirmed booking
+// @route   PUT /api/bookings/hold/:id/confirm
+// @access  Private
+export const confirmHold = async (req, res) => {
+  try {
+    const { numberOfGuests, totalPrice, specialRequests } = req.body;
+
+    const hold = await Booking.findById(req.params.id);
+
+    if (!hold) {
+      return res.status(404).json({ message: 'Hold not found or expired' });
+    }
+
+    // Verify ownership
+    if (hold.user.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Not authorized to confirm this hold' });
+    }
+
+    // Check if hold expired
+    if (hold.status !== 'hold' || hold.holdExpiresAt < new Date()) {
+      return res.status(400).json({ message: 'Hold has expired. Please try booking again.' });
+    }
+
+    // Update hold to pending booking
+    hold.status = 'pending';
+    hold.numberOfGuests = numberOfGuests || hold.numberOfGuests;
+    hold.totalPrice = totalPrice || hold.totalPrice;
+    hold.specialRequests = specialRequests;
+    hold.holdExpiresAt = undefined; // Remove expiration
+
+    await hold.save();
+
+    res.json({
+      success: true,
+      data: hold,
+      message: 'Booking confirmed successfully',
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+

@@ -53,8 +53,12 @@ const bookingSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['pending', 'confirmed', 'checked-in', 'checked-out', 'cancelled'],
+      enum: ['pending', 'confirmed', 'checked-in', 'checked-out', 'cancelled', 'hold'],
       default: 'pending',
+    },
+    holdExpiresAt: {
+      type: Date,
+      index: { expires: 0 }, // TTL index - auto-deletes documents when holdExpiresAt passes
     },
     paymentStatus: {
       type: String,
