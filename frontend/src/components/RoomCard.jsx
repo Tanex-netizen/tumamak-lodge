@@ -5,6 +5,9 @@ import { FiStar, FiUsers } from 'react-icons/fi';
 import { formatCurrency } from '../lib/utils';
 
 const RoomCard = ({ room }) => {
+  // Debug: Log room capacity
+  console.log(`Room ${room.name} capacity:`, room.capacity);
+  
   // Resolve image URL: if stored URL is a server-relative path (/images/...),
   // prefix it with the backend origin (VITE_API_URL without /api). This keeps
   // dev server and production working the same way.
