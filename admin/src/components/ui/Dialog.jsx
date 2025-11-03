@@ -46,7 +46,8 @@ const DialogContent = React.forwardRef(({ className, children, onClose, ...props
     ref={ref}
     className={cn(
       // keep width flexible here; pages should pass max-w via className when needed
-      "relative bg-white rounded-lg shadow-lg w-full p-6 max-h-[90vh] overflow-y-auto",
+      // add bottom padding so sticky footer does not cover content
+      "relative bg-white rounded-lg shadow-lg w-full p-6 pb-20 max-h-[90vh] overflow-y-auto",
       className
     )}
     {...props}
@@ -95,7 +96,7 @@ const DialogFooter = ({ className, ...props }) => (
   <div
     className={cn(
       // sticky footer so action buttons are always visible; keep buttons inline (no wrap)
-      "flex flex-row justify-end gap-2 mt-4 sticky bottom-0 bg-white/95 py-3",
+      "flex flex-row justify-end gap-2 mt-4 sticky bottom-0 bg-white/95 py-3 z-10",
       className
     )}
     {...props}
