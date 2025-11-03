@@ -462,27 +462,6 @@ const RoomDetailPage = () => {
                   </div>
                 </div>
 
-                {/* Price Summary */}
-                {checkIn && checkOut && (
-                  <div className="bg-brown-100 border-2 border-brown-300 p-5 rounded-lg mb-6">
-                    <h3 className="text-brown-900 font-semibold mb-3 text-lg">Price Breakdown</h3>
-                    <div className="flex justify-between items-center mb-2 pb-2 border-b border-brown-300">
-                      <span className="text-brown-700">
-                        {formatCurrency(roomPrice)} × {Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 12))} period(s) (12h each)
-                      </span>
-                      <span className="text-brown-900 font-semibold">
-                        {formatCurrency(roomPrice * Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 12)))}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center mt-3">
-                      <span className="text-brown-900 font-bold text-lg">Total Price</span>
-                      <span className="text-brown-900 font-bold text-2xl">
-                        {formatCurrency(roomPrice * Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 12)))}
-                      </span>
-                    </div>
-                  </div>
-                )}
-
                 {/* Book Button */}
                 <Button
                   onClick={handleBookNow}
