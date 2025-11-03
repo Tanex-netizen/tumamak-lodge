@@ -290,17 +290,19 @@ const BookingPage = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <Label htmlFor="adults">Adults</Label>
-                        <Input
+                        <select
                           id="adults"
-                          type="number"
-                          min="1"
-                          max={room.capacity?.adults || 10}
                           value={adults}
-                          onChange={(e) => setAdults(parseInt(e.target.value) || 1)}
-                          className="mt-1"
-                        />
+                          onChange={(e) => setAdults(parseInt(e.target.value))}
+                          className="mt-1 w-full px-3 py-2 border border-brown-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brown-500"
+                        >
+                          <option value="">Select number of guests</option>
+                          <option value="2">2 persons (Rooms 1, 2, 3, 4, 5, 6, 7, 9, 12, 13, 14, 16)</option>
+                          <option value="3">3 persons (Rooms 10, 11, 15)</option>
+                          <option value="4">4 persons (Room 8)</option>
+                        </select>
                         <p className="text-sm text-brown-600 mt-1">
-                          Max: {room.capacity?.adults || 2} adults
+                          Max: {room.capacity?.adults || 2} adults for this room
                         </p>
                       </div>
                     </div>

@@ -34,6 +34,7 @@ const VehicleCheckoutPage = () => {
     emergencyContact: '',
     emergencyPhone: '',
     specialRequests: '',
+    numberOfPassengers: '',
   });
 
   const [rentalDays, setRentalDays] = useState(0);
@@ -180,7 +181,7 @@ const VehicleCheckoutPage = () => {
       return;
     }
 
-    if (!formData.phone || !formData.address || !formData.licenseNumber) {
+    if (!formData.phone || !formData.address || !formData.licenseNumber || !formData.numberOfPassengers) {
       alert('Please fill in all required fields');
       return;
     }
@@ -418,6 +419,29 @@ const VehicleCheckoutPage = () => {
                       />
                     </div>
                   </div>
+                </div>
+
+                {/* Number of Passengers */}
+                <div>
+                  <Label htmlFor="numberOfPassengers">Number of Passengers *</Label>
+                  <select
+                    id="numberOfPassengers"
+                    name="numberOfPassengers"
+                    value={formData.numberOfPassengers}
+                    onChange={handleInputChange}
+                    className="mt-1 w-full px-3 py-2 border border-brown-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brown-500"
+                    required
+                  >
+                    <option value="">Select number of passengers</option>
+                    {[...Array(vehicle.capacity)].map((_, i) => (
+                      <option key={i + 1} value={i + 1}>
+                        {i + 1} {i + 1 === 1 ? 'passenger' : 'passengers'}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-sm text-brown-600 mt-1">
+                    Maximum capacity: {vehicle.capacity} {vehicle.capacity === 1 ? 'passenger' : 'passengers'}
+                  </p>
                 </div>
 
                 {/* Special Requests */}
