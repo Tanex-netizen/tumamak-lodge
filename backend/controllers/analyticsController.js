@@ -345,8 +345,8 @@ export const getDashboardStats = async (req, res) => {
     const now = new Date();
     const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
 
-    // Total revenue (only fully-paid bookings)
-    const totalRevenueResult = await Booking.aggregate([
+    // Total revenue from rooms (only fully-paid bookings)
+    const totalRoomRevenueResult = await Booking.aggregate([
       {
         $match: {
           status: { $nin: ['cancelled'] },
@@ -361,8 +361,29 @@ export const getDashboardStats = async (req, res) => {
       },
     ]);
 
-    // Last month revenue for growth calculation
-    const lastMonthRevenueResult = await Booking.aggregate([
+    // Total revenue from vehicle rentals (only fully-paid)
+    const totalVehicleRevenueResult = await VehicleRental.aggregate([
+      {
+        $match: {
+          status: { $nin: ['cancelled'] },
+          paymentStatus: 'fully-paid',
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: { $add: ['$rentalCost', '$reservationFee'] } },
+        },
+      },
+    ]);
+
+    // Calculate total revenue from both sources
+    const totalRoomRevenue = totalRoomRevenueResult[0]?.total || 0;
+    const totalVehicleRevenue = totalVehicleRevenueResult[0]?.total || 0;
+    const totalRevenue = totalRoomRevenue + totalVehicleRevenue;
+
+    // Last month revenue for growth calculation (from both sources)
+    const lastMonthRoomRevenueResult = await Booking.aggregate([
       {
         $match: {
           status: { $nin: ['cancelled'] },
@@ -378,8 +399,23 @@ export const getDashboardStats = async (req, res) => {
       },
     ]);
 
-    const totalRevenue = totalRevenueResult[0]?.total || 0;
-    const lastMonthRevenue = lastMonthRevenueResult[0]?.total || 0;
+    const lastMonthVehicleRevenueResult = await VehicleRental.aggregate([
+      {
+        $match: {
+          status: { $nin: ['cancelled'] },
+          paymentStatus: 'fully-paid',
+          createdAt: { $lt: lastMonth },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: { $add: ['$rentalCost', '$reservationFee'] } },
+        },
+      },
+    ]);
+
+    const lastMonthRevenue = (lastMonthRoomRevenueResult[0]?.total || 0) + (lastMonthVehicleRevenueResult[0]?.total || 0);
     const revenueGrowth = lastMonthRevenue > 0 
       ? ((totalRevenue - lastMonthRevenue) / lastMonthRevenue) * 100 
       : 0;
