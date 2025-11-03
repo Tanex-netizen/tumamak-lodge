@@ -37,11 +37,6 @@ const HomePage = () => {
                   Book Now
                 </Button>
               </Link>
-              <Link to="/contact">
-                <Button size="lg" variant="outline" className="text-lg px-8 py-6">
-                  Contact Us
-                </Button>
-              </Link>
             </div>
           </div>
         </div>
