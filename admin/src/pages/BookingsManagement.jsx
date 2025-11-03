@@ -228,28 +228,39 @@ const BookingsManagement = () => {
           ) : (
             <div className="overflow-x-auto">
               <Table className="table-fixed">
+                <colgroup>
+                  <col style={{ width: '33%' }} />
+                  <col style={{ width: '8%' }} />
+                  <col style={{ width: '10%' }} />
+                  <col style={{ width: '10%' }} />
+                  <col style={{ width: '8%' }} />
+                  <col style={{ width: '8%' }} />
+                  <col style={{ width: '8%' }} />
+                  <col style={{ width: '8%' }} />
+                  <col style={{ width: '7%' }} />
+                </colgroup>
                 <thead>
                   <tr>
-                    <th className="h-12 px-4 sm:px-6 text-left align-middle font-medium text-brown-700 w-1/3">Guest</th>
-                    <th className="h-12 px-4 sm:px-6 text-left align-middle font-medium text-brown-700 w-28">Room</th>
-                    <th className="h-12 px-4 sm:px-6 text-left align-middle font-medium text-brown-700 w-32">Check-in</th>
-                    <th className="h-12 px-4 sm:px-6 text-left align-middle font-medium text-brown-700 w-32">Check-out</th>
-                    <th className="h-12 px-4 sm:px-6 text-left align-middle font-medium text-brown-700 w-28">Guests</th>
-                    <th className="h-12 px-4 sm:px-6 text-right align-middle font-medium text-brown-700 w-28">Total</th>
-                    <th className="h-12 px-4 sm:px-6 text-left align-middle font-medium text-brown-700 w-32">Status</th>
-                    <th className="h-12 px-4 sm:px-6 text-left align-middle font-medium text-brown-700 w-32">Payment</th>
-                    <th className="h-12 px-4 sm:px-6 text-left align-middle font-medium text-brown-700 w-56">Actions</th>
+                    <th className="h-12 px-4 sm:px-6 text-left align-middle font-medium text-brown-700">Guest</th>
+                    <th className="h-12 px-4 sm:px-6 text-left align-middle font-medium text-brown-700">Room</th>
+                    <th className="h-12 px-4 sm:px-6 text-left align-middle font-medium text-brown-700">Check-in</th>
+                    <th className="h-12 px-4 sm:px-6 text-left align-middle font-medium text-brown-700">Check-out</th>
+                    <th className="h-12 px-4 sm:px-6 text-left align-middle font-medium text-brown-700">Guests</th>
+                    <th className="h-12 px-4 sm:px-6 text-right align-middle font-medium text-brown-700">Total</th>
+                    <th className="h-12 px-4 sm:px-6 text-left align-middle font-medium text-brown-700">Status</th>
+                    <th className="h-12 px-4 sm:px-6 text-left align-middle font-medium text-brown-700">Payment</th>
+                    <th className="h-12 px-4 sm:px-6 text-left align-middle font-medium text-brown-700">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {bookings.map((booking) => (
                     <tr key={booking._id}>
-                      <td className="px-4 sm:px-6 py-4 align-middle break-word">
-                        <div>
-                          <p className="font-medium text-brown-900">
+                      <td className="px-4 sm:px-6 py-4 align-middle">
+                        <div className="leading-relaxed whitespace-normal">
+                          <p className="font-medium text-brown-900 break-word">
                             {booking.user?.firstName} {booking.user?.lastName}
                           </p>
-                          <p className="text-sm text-brown-600">{booking.user?.email}</p>
+                          <p className="text-sm text-brown-600 break-word">{booking.user?.email}</p>
                         </div>
                       </td>
                       <td className="px-4 sm:px-6 py-4 align-middle">{booking.room?.name || 'N/A'}</td>
