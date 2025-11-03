@@ -482,8 +482,9 @@ export const getDashboardStats = async (req, res) => {
       {
         $group: {
           _id: null,
-          totalRentalRevenue: { $sum: { $add: ['$rentalCost', '$reservationFee'] } },
+          totalRentalCost: { $sum: '$rentalCost' }, // Base rental cost without fee
           totalRentalReservationFees: { $sum: '$reservationFee' },
+          totalRentalRevenue: { $sum: { $add: ['$rentalCost', '$reservationFee'] } }, // Total amount
         },
       },
     ]);
@@ -492,6 +493,7 @@ export const getDashboardStats = async (req, res) => {
     const roomPriceTotal = revenueBreakdown[0]?.totalRoomPrice || 0;
     const roomRevenueTotal = revenueBreakdown[0]?.totalRoomRevenue || 0;
     const rentalReservationFeesTotal = vehicleRentalRevenue[0]?.totalRentalReservationFees || 0;
+    const rentalCostTotal = vehicleRentalRevenue[0]?.totalRentalCost || 0;
     const rentalRevenueTotal = vehicleRentalRevenue[0]?.totalRentalRevenue || 0;
 
     // Revenue by room (only fully-paid bookings)
@@ -549,8 +551,8 @@ export const getDashboardStats = async (req, res) => {
         // Combined reservation fees from both rooms and rentals
         reservationFees: reservationFeesTotal + rentalReservationFeesTotal,
         roomRevenue: roomPriceTotal, // Base room price without reservation fee
-        rentalRevenue: rentalRevenueTotal, // Total amount guests paid for rentals
-        total: roomRevenueTotal + rentalRevenueTotal,
+        rentalRevenue: rentalCostTotal, // Base rental cost without reservation fee
+        total: roomPriceTotal + rentalCostTotal + reservationFeesTotal + rentalReservationFeesTotal, // All revenues combined
       },
     });
   } catch (error) {
