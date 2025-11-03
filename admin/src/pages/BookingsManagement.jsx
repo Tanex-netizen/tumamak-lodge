@@ -170,10 +170,8 @@ const BookingsManagement = () => {
                 onChange={(e) => handleFilterChange('paymentStatus', e.target.value)}
               >
                 <option value="">All Payment Status</option>
-                <option value="pending">Pending</option>
-                <option value="reservation-paid">Reservation Paid</option>
-                <option value="paid">Paid</option>
-                <option value="refunded">Refunded</option>
+                <option value="unpaid">Unpaid</option>
+                <option value="fully-paid">Paid</option>
               </Select>
             </div>
 
@@ -488,8 +486,7 @@ const BookingsManagement = () => {
                 onChange={(e) => setNewPaymentStatus(e.target.value)}
               >
                 <option value="unpaid">Unpaid</option>
-                <option value="reservation-paid">Reservation Paid</option>
-                <option value="fully-paid">Fully Paid</option>
+                <option value="fully-paid">Paid</option>
               </Select>
             </div>
           </div>

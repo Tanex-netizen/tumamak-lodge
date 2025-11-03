@@ -477,9 +477,7 @@ const VehicleRentalsManagement = () => {
               onChange={(e) => setNewPaymentStatus(e.target.value)}
             >
               <option value="unpaid">Unpaid</option>
-              <option value="deposit-paid">Deposit Paid</option>
-              <option value="fully-paid">Fully Paid</option>
-              <option value="refunded">Refunded</option>
+              <option value="fully-paid">Paid</option>
             </Select>
           </div>
 
