@@ -11,7 +11,9 @@ export const useRoomStore = create((set) => ({
   fetchRooms: async (filters = {}) => {
     set({ loading: true, error: null });
     try {
-      const { data } = await api.get('/rooms', { params: filters });
+      // Add cache-busting parameter to force fresh data
+      const params = { ...filters, _t: Date.now() };
+      const { data } = await api.get('/rooms', { params });
       console.log('fetchRooms response:', data);
       set({ rooms: data });
     } catch (error) {
