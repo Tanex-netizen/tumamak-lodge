@@ -297,9 +297,11 @@ const BookingPage = () => {
                           className="mt-1 w-full px-3 py-2 border border-brown-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brown-500"
                         >
                           <option value="">Select number of guests</option>
-                          <option value="2">2 persons (Rooms 1, 2, 3, 4, 5, 6, 7, 9, 12, 13, 14, 16)</option>
-                          <option value="3">3 persons (Rooms 10, 11, 15)</option>
-                          <option value="4">4 persons (Room 8)</option>
+                          {[...Array(room.capacity?.adults || 2)].map((_, i) => (
+                            <option key={i + 1} value={i + 1}>
+                              {i + 1} {i + 1 === 1 ? 'person' : 'persons'}
+                            </option>
+                          ))}
                         </select>
                         <p className="text-sm text-brown-600 mt-1">
                           Max: {room.capacity?.adults || 2} adults for this room
