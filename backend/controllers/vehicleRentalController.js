@@ -34,8 +34,8 @@ export const createVehicleRental = async (req, res) => {
     // Calculate 12% reservation fee
     const reservationFee = Math.round(rentalCost * 0.12);
     
-    // Total amount = rental cost + reservation fee + security deposit
-    const calculatedTotalAmount = rentalCost + reservationFee + securityDeposit;
+    // Total amount = rental cost + reservation fee (security deposit is separate and refundable)
+    const calculatedTotalAmount = rentalCost + reservationFee;
 
     // Create rental
     const rental = await VehicleRental.create({
@@ -47,7 +47,7 @@ export const createVehicleRental = async (req, res) => {
       dailyRate,
       rentalCost,
       reservationFee,
-      securityDeposit,
+      securityDeposit: securityDeposit || 0,
       totalAmount: calculatedTotalAmount,
       contactInfo,
       specialRequests,

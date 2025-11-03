@@ -42,7 +42,7 @@ const vehicleRentalSchema = new mongoose.Schema(
     },
     securityDeposit: {
       type: Number,
-      required: true,
+      default: 0,
     },
     totalAmount: {
       type: Number,

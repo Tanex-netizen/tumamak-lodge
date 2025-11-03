@@ -185,6 +185,11 @@ const VehicleCheckoutPage = () => {
       return;
     }
 
+    if (!totalCost || isNaN(totalCost) || totalCost <= 0) {
+      alert('Invalid rental amount. Please check your dates and try again.');
+      return;
+    }
+
     // Create rental data
     const rentalData = {
       vehicleId: vehicle._id,
