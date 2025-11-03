@@ -227,52 +227,52 @@ const BookingsManagement = () => {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <Table className="w-auto">
+              <Table className="w-full table-auto">
                 <thead>
                   <tr>
-                    <th className="h-12 px-6 text-left align-middle font-medium text-brown-700">Guest</th>
-                    <th className="h-12 px-6 text-left align-middle font-medium text-brown-700">Room</th>
-                    <th className="h-12 px-6 text-left align-middle font-medium text-brown-700">Check-in</th>
-                    <th className="h-12 px-6 text-left align-middle font-medium text-brown-700">Check-out</th>
-                    <th className="h-12 px-6 text-left align-middle font-medium text-brown-700">Guests</th>
-                    <th className="h-12 px-6 text-right align-middle font-medium text-brown-700">Total</th>
-                    <th className="h-12 px-6 text-left align-middle font-medium text-brown-700">Status</th>
-                    <th className="h-12 px-6 text-left align-middle font-medium text-brown-700">Payment</th>
-                    <th className="h-12 px-6 text-left align-middle font-medium text-brown-700">Actions</th>
+                    <th className="h-10 px-3 text-left align-middle font-medium text-brown-700 text-sm">Guest</th>
+                    <th className="h-10 px-3 text-left align-middle font-medium text-brown-700 text-sm">Room</th>
+                    <th className="h-10 px-3 text-left align-middle font-medium text-brown-700 text-sm">Check-in</th>
+                    <th className="h-10 px-3 text-left align-middle font-medium text-brown-700 text-sm">Check-out</th>
+                    <th className="h-10 px-3 text-left align-middle font-medium text-brown-700 text-sm">Guests</th>
+                    <th className="h-10 px-3 text-right align-middle font-medium text-brown-700 text-sm">Total</th>
+                    <th className="h-10 px-3 text-left align-middle font-medium text-brown-700 text-sm">Status</th>
+                    <th className="h-10 px-3 text-left align-middle font-medium text-brown-700 text-sm">Payment</th>
+                    <th className="h-10 px-3 text-left align-middle font-medium text-brown-700 text-sm">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {bookings.map((booking) => (
                     <tr key={booking._id}>
-                      <td className="px-6 py-4 align-middle whitespace-normal">
+                      <td className="px-3 py-3 align-middle">
                         <div>
-                          <p className="font-medium text-brown-900">
+                          <p className="font-medium text-brown-900 text-sm">
                             {booking.user?.firstName} {booking.user?.lastName}
                           </p>
-                          <p className="text-sm text-brown-600">{booking.user?.email}</p>
+                          <p className="text-xs text-brown-600">{booking.user?.email}</p>
                         </div>
                       </td>
-                      <td className="px-4 sm:px-6 py-4 align-middle">{booking.room?.name || 'N/A'}</td>
-                      <td className="px-4 sm:px-6 py-4 align-middle">{formatDate(booking.checkInDate)}</td>
-                      <td className="px-4 sm:px-6 py-4 align-middle">{formatDate(booking.checkOutDate)}</td>
-                      <td className="px-4 sm:px-6 py-4 align-middle"> 
+                      <td className="px-3 py-3 align-middle text-sm">{booking.room?.name || 'N/A'}</td>
+                      <td className="px-3 py-3 align-middle text-sm whitespace-nowrap">{formatDate(booking.checkInDate)}</td>
+                      <td className="px-3 py-3 align-middle text-sm whitespace-nowrap">{formatDate(booking.checkOutDate)}</td>
+                      <td className="px-3 py-3 align-middle text-sm"> 
                         {typeof booking.guests === 'object' 
                           ? `${booking.guests.adults || 0}A, ${booking.guests.children || 0}C`
                           : booking.guests || 0}
                       </td>
-                      <td className="px-4 sm:px-6 py-4 align-middle font-medium text-right">{formatCurrency(booking.totalAmount || 0)}</td>
-                      <td className="px-4 sm:px-6 py-4 align-middle">
+                      <td className="px-3 py-3 align-middle font-medium text-right text-sm whitespace-nowrap">{formatCurrency(booking.totalAmount || 0)}</td>
+                      <td className="px-3 py-3 align-middle">
                         <Badge className={getStatusColor(booking.status)}>
                           {booking.status}
                         </Badge>
                       </td>
-                      <td className="px-4 sm:px-6 py-4 align-middle">
+                      <td className="px-3 py-3 align-middle">
                         <Badge className={getPaymentColor(booking.paymentStatus)}>
                           {booking.paymentStatus}
                         </Badge>
                       </td>
-                      <td className="px-4 sm:px-6 py-4 align-middle">
-                        <div className="flex gap-3 items-center justify-end">
+                      <td className="px-3 py-3 align-middle">
+                        <div className="flex gap-2 items-center flex-wrap">
                           <Button
                             size="sm"
                             variant="outline"
