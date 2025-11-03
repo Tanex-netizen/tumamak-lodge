@@ -482,7 +482,7 @@ export const getDashboardStats = async (req, res) => {
       {
         $group: {
           _id: null,
-          totalRentalRevenue: { $sum: '$totalAmount' },
+          totalRentalRevenue: { $sum: { $add: ['$rentalCost', '$reservationFee'] } },
           totalRentalReservationFees: { $sum: '$reservationFee' },
         },
       },

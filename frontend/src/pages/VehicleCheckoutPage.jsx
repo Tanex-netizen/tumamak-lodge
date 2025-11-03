@@ -38,9 +38,8 @@ const VehicleCheckoutPage = () => {
 
   const [rentalDays, setRentalDays] = useState(0);
   const [rentalCost, setRentalCost] = useState(0);
-  const [reservationFee, setReservationFee] = useState(0);
   const [totalCost, setTotalCost] = useState(0);
-  const [securityDeposit, setSecurityDeposit] = useState(0);
+  const [reservationFee, setReservationFee] = useState(0);
   const [bookedDates, setBookedDates] = useState([]);
   const [pickupDate, setPickupDate] = useState(null);
   const [returnDate, setReturnDate] = useState(null);
@@ -84,10 +83,6 @@ const VehicleCheckoutPage = () => {
       navigate('/login', { state: { from: location } });
       return;
     }
-
-    // Calculate security deposit based on vehicle type
-    const deposit = vehicle.type === 'Motorcycle' ? 5000 : 10000;
-    setSecurityDeposit(deposit);
   }, [vehicle, user, navigate, location]);
 
   useEffect(() => {
@@ -196,9 +191,8 @@ const VehicleCheckoutPage = () => {
       pickupDate: `${formData.pickupDate}T${formData.pickupTime}`,
       returnDate: `${formData.returnDate}T${formData.returnTime}`,
       rentalDays,
-      totalAmount: totalCost + securityDeposit,
+      totalAmount: totalCost,
       dailyRate: vehicle.pricePerDay,
-      securityDeposit,
       contactInfo: {
         fullName: formData.fullName,
         email: formData.email,
@@ -505,22 +499,10 @@ const VehicleCheckoutPage = () => {
                     ₱{reservationFee.toLocaleString()}
                   </span>
                 </div>
-                <div className="flex justify-between text-sm border-t border-brown-200 pt-3">
-                  <span className="text-brown-600">Subtotal</span>
-                  <span className="font-semibold text-brown-900">
-                    ₱{totalCost.toLocaleString()}
-                  </span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-brown-600">Security Deposit</span>
-                  <span className="font-semibold text-brown-900">
-                    ₱{securityDeposit.toLocaleString()}
-                  </span>
-                </div>
                 <div className="flex justify-between text-lg font-bold border-t border-brown-200 pt-3">
                   <span className="text-brown-900">Total Amount</span>
                   <span className="text-brown-900">
-                    ₱{(totalCost + securityDeposit).toLocaleString()}
+                    ₱{totalCost.toLocaleString()}
                   </span>
                 </div>
               </div>
@@ -531,7 +513,6 @@ const VehicleCheckoutPage = () => {
                   Important Notes:
                 </h4>
                 <ul className="text-xs text-blue-800 space-y-1">
-                  <li>• Security deposit is refundable upon return</li>
                   <li>• Vehicle must be returned with full tank</li>
                   <li>• Valid driver's license required</li>
                   <li>• Payment due on pickup</li>
