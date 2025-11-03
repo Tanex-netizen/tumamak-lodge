@@ -459,10 +459,10 @@ const BookingsManagement = () => {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowStatusDialog(false)}>
+            <Button size="sm" variant="outline" onClick={() => setShowStatusDialog(false)}>
               Cancel
             </Button>
-            <Button onClick={handleConfirmStatusUpdate}>Update Status</Button>
+            <Button size="sm" onClick={handleConfirmStatusUpdate}>Update Status</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -492,10 +492,10 @@ const BookingsManagement = () => {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowPaymentDialog(false)}>
+            <Button size="sm" variant="outline" onClick={() => setShowPaymentDialog(false)}>
               Cancel
             </Button>
-            <Button onClick={handleConfirmPaymentUpdate}>Update Payment</Button>
+            <Button size="sm" onClick={handleConfirmPaymentUpdate}>Update Payment</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

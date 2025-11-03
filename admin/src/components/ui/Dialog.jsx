@@ -94,8 +94,8 @@ DialogDescription.displayName = "DialogDescription"
 const DialogFooter = ({ className, ...props }) => (
   <div
     className={cn(
-      // simple flex row with gap, buttons visible on all screens
-      "flex flex-row justify-end gap-2 mt-4",
+      // simple flex row with gap, allow wrapping so buttons remain visible on small widths
+      "flex flex-row flex-wrap justify-end gap-2 mt-4",
       className
     )}
     {...props}
