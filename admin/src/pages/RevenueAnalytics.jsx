@@ -32,6 +32,8 @@ const RevenueAnalytics = () => {
   const [revenueData, setRevenueData] = useState([]);
   const [revenueByRoomData, setRevenueByRoomData] = useState([]);
   const [paymentTypeData, setPaymentTypeData] = useState([]);
+  const [monthlyHistory, setMonthlyHistory] = useState([]);
+  const [showHistory, setShowHistory] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -138,6 +140,29 @@ const RevenueAnalytics = () => {
     }
   };
 
+  const loadMonthlyHistory = async () => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/analytics/monthly-revenue?months=12`,
+        {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch monthly history');
+      }
+
+      const data = await response.json();
+      setMonthlyHistory(data.data || []);
+    } catch (error) {
+      console.error('Error loading monthly history:', error);
+    }
+  };
+
   const loadData = async () => {
     setLoading(true);
     setError(null);
@@ -156,6 +181,7 @@ const RevenueAnalytics = () => {
 
   useEffect(() => {
     loadData();
+    loadMonthlyHistory();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dateRange]);
 
@@ -271,12 +297,24 @@ const RevenueAnalytics = () => {
         </div>
       ) : (
         <>
+          {/* Current Month Indicator */}
+          {stats?.currentMonth && (
+            <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm text-blue-900">
+                <span className="font-semibold">Showing revenue for:</span> {stats.currentMonth.name}
+              </p>
+              <p className="text-xs text-blue-700 mt-1">
+                Revenue resets at the beginning of each month. Revenue growth is compared to the previous month.
+              </p>
+            </div>
+          )}
+
           {/* Summary Cards */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
             <Card>
               <CardContent className="pt-6">
                 <div className="text-center">
-                  <p className="text-sm text-brown-600">Total Revenue</p>
+                  <p className="text-sm text-brown-600">Total Revenue (This Month)</p>
                   <p className="text-3xl font-bold text-brown-900 mt-2">
                     {formatCurrency(stats?.totalRevenue || 0)}
                   </p>
@@ -542,6 +580,73 @@ const RevenueAnalytics = () => {
                 </table>
               </div>
             </CardContent>
+          </Card>
+
+          {/* Monthly Revenue History */}
+          <Card className="mb-6">
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <CardTitle>Monthly Revenue History</CardTitle>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => setShowHistory(!showHistory)}
+                >
+                  {showHistory ? 'Hide' : 'Show'} Past Months
+                </Button>
+              </div>
+            </CardHeader>
+            {showHistory && (
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-brown-50">
+                      <tr>
+                        <th className="text-left py-3 px-4 text-brown-700 font-medium">
+                          Month
+                        </th>
+                        <th className="text-right py-3 px-4 text-brown-700 font-medium">
+                          Room Revenue
+                        </th>
+                        <th className="text-right py-3 px-4 text-brown-700 font-medium">
+                          Rental Revenue
+                        </th>
+                        <th className="text-right py-3 px-4 text-brown-700 font-medium">
+                          Reservation Fees
+                        </th>
+                        <th className="text-right py-3 px-4 text-brown-700 font-medium">
+                          Total Revenue
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {monthlyHistory.map((month, index) => (
+                        <tr 
+                          key={`${month.year}-${month.month}`} 
+                          className={`border-b border-brown-100 ${index === 0 ? 'bg-blue-50 font-semibold' : ''}`}
+                        >
+                          <td className="py-3 px-4 text-brown-900">
+                            {month.monthName} {index === 0 && <span className="text-blue-600 text-xs ml-2">(Current)</span>}
+                          </td>
+                          <td className="py-3 px-4 text-right text-brown-900">
+                            {formatCurrency(month.revenueBreakdown.roomRevenue)}
+                          </td>
+                          <td className="py-3 px-4 text-right text-brown-900">
+                            {formatCurrency(month.revenueBreakdown.rentalRevenue)}
+                          </td>
+                          <td className="py-3 px-4 text-right text-brown-900">
+                            {formatCurrency(month.revenueBreakdown.reservationFees)}
+                          </td>
+                          <td className="py-3 px-4 text-right font-medium text-brown-900">
+                            {formatCurrency(month.revenueBreakdown.total)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            )}
           </Card>
         </>
       )}

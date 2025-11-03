@@ -343,14 +343,17 @@ export const getBookingStatistics = async (req, res) => {
 export const getDashboardStats = async (req, res) => {
   try {
     const now = new Date();
-    const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
 
-    // Total revenue from rooms (only fully-paid bookings)
+    // Current month revenue from rooms (only fully-paid bookings)
     const totalRoomRevenueResult = await Booking.aggregate([
       {
         $match: {
           status: { $nin: ['cancelled'] },
           paymentStatus: 'fully-paid',
+          createdAt: { $gte: currentMonthStart },
         },
       },
       {
@@ -361,12 +364,13 @@ export const getDashboardStats = async (req, res) => {
       },
     ]);
 
-    // Total revenue from vehicle rentals (only fully-paid)
+    // Current month revenue from vehicle rentals (only fully-paid)
     const totalVehicleRevenueResult = await VehicleRental.aggregate([
       {
         $match: {
           status: { $nin: ['cancelled'] },
           paymentStatus: 'fully-paid',
+          createdAt: { $gte: currentMonthStart },
         },
       },
       {
@@ -377,7 +381,7 @@ export const getDashboardStats = async (req, res) => {
       },
     ]);
 
-    // Calculate total revenue from both sources
+    // Calculate current month total revenue from both sources
     const totalRoomRevenue = totalRoomRevenueResult[0]?.total || 0;
     const totalVehicleRevenue = totalVehicleRevenueResult[0]?.total || 0;
     const totalRevenue = totalRoomRevenue + totalVehicleRevenue;
@@ -388,7 +392,7 @@ export const getDashboardStats = async (req, res) => {
         $match: {
           status: { $nin: ['cancelled'] },
           paymentStatus: 'fully-paid',
-          createdAt: { $lt: lastMonth },
+          createdAt: { $gte: lastMonthStart, $lte: lastMonthEnd },
         },
       },
       {
@@ -404,7 +408,7 @@ export const getDashboardStats = async (req, res) => {
         $match: {
           status: { $nin: ['cancelled'] },
           paymentStatus: 'fully-paid',
-          createdAt: { $lt: lastMonth },
+          createdAt: { $gte: lastMonthStart, $lte: lastMonthEnd },
         },
       },
       {
@@ -489,12 +493,13 @@ export const getDashboardStats = async (req, res) => {
       },
     ]);
 
-        // Revenue breakdown: Reservation Fees vs Room Total
+        // Revenue breakdown: Reservation Fees vs Room Total (current month only)
     const revenueBreakdown = await Booking.aggregate([
       {
         $match: {
           status: { $nin: ['cancelled'] },
           paymentStatus: 'fully-paid',
+          createdAt: { $gte: currentMonthStart },
         },
       },
       {
@@ -507,12 +512,13 @@ export const getDashboardStats = async (req, res) => {
       },
     ]);
 
-    // Vehicle rental revenue
+    // Vehicle rental revenue (current month only)
     const vehicleRentalRevenue = await VehicleRental.aggregate([
       {
         $match: {
           status: { $nin: ['cancelled'] },
           paymentStatus: 'fully-paid',
+          createdAt: { $gte: currentMonthStart },
         },
       },
       {
@@ -532,12 +538,13 @@ export const getDashboardStats = async (req, res) => {
     const rentalCostTotal = vehicleRentalRevenue[0]?.totalRentalCost || 0;
     const rentalRevenueTotal = vehicleRentalRevenue[0]?.totalRentalRevenue || 0;
 
-    // Revenue by room (only fully-paid bookings)
+    // Revenue by room (only fully-paid bookings, current month)
     const revenueByRoom = await Booking.aggregate([
       {
         $match: {
           status: { $nin: ['cancelled'] },
           paymentStatus: 'fully-paid',
+          createdAt: { $gte: currentMonthStart },
         },
       },
       {
@@ -590,6 +597,102 @@ export const getDashboardStats = async (req, res) => {
         rentalRevenue: rentalCostTotal, // Base rental cost without reservation fee
         total: roomPriceTotal + rentalCostTotal + reservationFeesTotal + rentalReservationFeesTotal, // All revenues combined
       },
+      currentMonth: {
+        year: now.getFullYear(),
+        month: now.getMonth() + 1, // JavaScript months are 0-indexed
+        name: now.toLocaleString('default', { month: 'long', year: 'numeric' })
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Get monthly revenue history
+// @route   GET /api/analytics/monthly-revenue
+// @access  Private/Admin
+export const getMonthlyRevenueHistory = async (req, res) => {
+  try {
+    const { months = 12 } = req.query; // Default to last 12 months
+    const now = new Date();
+    const monthsToFetch = parseInt(months);
+    
+    const monthlyData = [];
+
+    // Generate data for each of the last N months
+    for (let i = 0; i < monthsToFetch; i++) {
+      const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0, 23, 59, 59, 999);
+
+      // Room revenue for this month
+      const roomRevenue = await Booking.aggregate([
+        {
+          $match: {
+            status: { $nin: ['cancelled'] },
+            paymentStatus: 'fully-paid',
+            createdAt: { $gte: monthStart, $lte: monthEnd },
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            totalReservationFees: { $sum: '$reservationFee' },
+            totalRoomPrice: { $sum: '$roomPrice' },
+            totalRoomRevenue: { $sum: '$totalAmount' },
+          },
+        },
+      ]);
+
+      // Vehicle rental revenue for this month
+      const rentalRevenue = await VehicleRental.aggregate([
+        {
+          $match: {
+            status: { $nin: ['cancelled'] },
+            paymentStatus: 'fully-paid',
+            createdAt: { $gte: monthStart, $lte: monthEnd },
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            totalRentalCost: { $sum: '$rentalCost' },
+            totalRentalReservationFees: { $sum: '$reservationFee' },
+            totalRentalRevenue: { $sum: { $add: ['$rentalCost', '$reservationFee'] } },
+          },
+        },
+      ]);
+
+      const roomReservationFees = roomRevenue[0]?.totalReservationFees || 0;
+      const roomPrice = roomRevenue[0]?.totalRoomPrice || 0;
+      const roomTotal = roomRevenue[0]?.totalRoomRevenue || 0;
+      const rentalReservationFees = rentalRevenue[0]?.totalRentalReservationFees || 0;
+      const rentalCost = rentalRevenue[0]?.totalRentalCost || 0;
+      const rentalTotal = rentalRevenue[0]?.totalRentalRevenue || 0;
+
+      monthlyData.push({
+        year: monthStart.getFullYear(),
+        month: monthStart.getMonth() + 1,
+        monthName: monthStart.toLocaleString('default', { month: 'long', year: 'numeric' }),
+        monthShort: monthStart.toLocaleString('default', { month: 'short', year: 'numeric' }),
+        revenueBreakdown: {
+          reservationFees: roomReservationFees + rentalReservationFees,
+          roomRevenue: roomPrice,
+          rentalRevenue: rentalCost,
+          total: roomPrice + rentalCost + roomReservationFees + rentalReservationFees,
+        },
+        totalRevenue: roomTotal + rentalTotal,
+      });
+    }
+
+    // Sort by date (most recent first)
+    monthlyData.sort((a, b) => {
+      if (a.year !== b.year) return b.year - a.year;
+      return b.month - a.month;
+    });
+
+    res.json({
+      success: true,
+      data: monthlyData,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
