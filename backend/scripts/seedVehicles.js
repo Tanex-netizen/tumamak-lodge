@@ -60,7 +60,7 @@ const vehicles = [
     name: 'Yamaha Fazzio',
     type: 'Motorcycle',
     description: '125cc scooter • 2 helmets. Modern design with advanced features.',
-    pricePerDay: 500,
+    pricePerDay: 550,
     capacity: 2,
     images: [
       {
