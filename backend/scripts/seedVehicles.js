@@ -110,16 +110,16 @@ const vehicles = [
   {
     name: 'Stingray Wagon R',
     type: 'Car',
-    description: '7-seater / 7 seats. Compact and fuel-efficient family wagon.',
+    description: '5-seater / 5 seats. Compact and fuel-efficient family wagon.',
     pricePerDay: 1400,
-    capacity: 7,
+    capacity: 5,
     images: [
       {
         url: 'https://www.carfolio.com/images/dbimages/zgas/models/id/26598/suzuki%20wagonr%20stingray%20front%2034%202.jpg',
         public_id: 'stingray_wagon_1'
       }
     ],
-    features: ['7 seats', 'Air conditioning', 'Power steering', 'Fuel efficient', 'Spacious interior'],
+    features: ['5 seats', 'Air conditioning', 'Power steering', 'Fuel efficient', 'Spacious interior'],
     isAvailable: true,
     transmissionType: 'Manual',
     fuelType: 'Gasoline'
